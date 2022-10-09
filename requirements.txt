@@ -1,0 +1,6 @@
+discord
+python-dotenv
+pydalle[all]
+matplotlib
+numpy
+scipy
