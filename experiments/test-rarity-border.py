@@ -1,47 +1,42 @@
-# %%
-# from PIL import Image, ImageOps
-# ImageOps.expand(
-#     Image.open('1.png'),
-#     border=10,
-#     fill='green').save('1-border.png')
-
 
 # %%
 from PIL import Image
-from copy import deepcopy
-im = Image.open("catframe.gif")
 
-im2 = Image.open("1.png")
-width, height = im2.size
+# Load the example images
+# frame_gif = Image.open("../frames/neon_frame.gif")
+# frame_gif = Image.open("../frames/cat_crime_graffiti.gif")
+frame_gif = Image.open("../frames/glitch_unstable.gif")
+image = Image.open("imgs/cat_santa.png")
+width, height = image.size
 
-ims = []
+# Create a black background image
+offset = 275
+base_layer = Image.new(mode="RGB", size=(width + offset, height + offset))
+# Paste the target image on the base layer
+base_layer.paste(image, (offset//2, offset//2))
 
+# Break apart the frame gif, paste it ontop of the base image, and reconstruct it in a list
+gif_imgs = []
 try:
     while 1:
-        im.seek(im.tell()+1)
-        im3 = im.resize((width, height))
-        im3 = im3.convert('RGBA')
+        # Get the next frame, resize it, and add an alpha layer
+        frame_gif.seek(frame_gif.tell()+1)
+        frame_img = frame_gif.resize((width + offset, height + offset))
+        frame_img = frame_img.convert('RGBA')
 
-        newImage = []
-        for item in im3.getdata():
-            if all([v < 25 for v in item[:3]]):
-                newImage.append((0, 0, 0, 0))
-            else:
-                newImage.append(item)
+        # Copy the base layer image
+        temp_img = base_layer.copy()
+        # Then the frame on top
+        temp_img.paste(frame_img, (0, 0), frame_img)
 
-        im3.putdata(newImage)
-        imk = im2.copy()
-        # imk = imk.resize(width + 250, height + 250)
-
-        imk.paste(im3, (0, 0), im3)
-        ims.append(imk.copy())
-        # imk.show()
+        # Add this frame to the output list
+        gif_imgs.append(temp_img.copy())
 
 except EOFError:
     pass # end of sequence
 
-ims[0].save('example.gif',
-               save_all = True, append_images = ims[1:],
+gif_imgs[0].save('imgs/cat_santa_example.gif',
+               save_all = True, append_images = gif_imgs[1:],
                optimize = False, duration = 10, loop=0)
 
 # %%

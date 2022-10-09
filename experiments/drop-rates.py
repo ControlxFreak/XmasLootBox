@@ -13,16 +13,20 @@ from scipy.stats import poisson
 
 # Initialization
 labels = ["Common", "Uncommon", "Rare", "Legendary", "Mythical", "Godly", "N-F-Tacular", "Christmas Miracle"]
-ids = np.arange(1, len(labels) + 1)
+num_labels = len(labels)
+ids = np.arange(1, num_labels + 1)
 values = 2*ids
 mus = [1, 2, 6, 16]
 
+# Compute the PMFs everyday
 figi, axi = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(10, 15))
+ipmfs = []
 for wi, mu in enumerate(mus):
     # Grab the pmf for these IDs
     ipmf = poisson.pmf(ids, mu=mu)
     # Normalize to maintain distribution
     ipmf /= np.sum(ipmf)
+    ipmfs.append(ipmf)
     # Print the values
     print(f"### Week {wi} Probabilities")
     print("| Level | Rarity (%) |")
@@ -36,10 +40,22 @@ for wi, mu in enumerate(mus):
     axi[wi].set_xlabel("Probability (%)")
     axi[wi].invert_yaxis()
 
-
-os.makedirs("docs/", exist_ok=True)
+os.makedirs("../docs/", exist_ok=True)
 plt.tight_layout()
-figi.savefig("docs/rarity_histogram.png")
+figi.savefig("../docs/rarity_histogram.png")
 
 # %%
-plt.show()
+# Compute the probability that everyone gets at least 1 of each NFT rarity
+probs = np.ones(num_labels)
+for wi, ipmf in enumerate(ipmfs):
+    # Compute the probability
+    for i in range(num_labels):
+        # Note there are 7 attempts per week
+        probs[i] *= (1 - ipmf[i]) ** 7
+
+# The probability of NOT getting it is 1 - probs
+probs = 1 - probs
+for l, p in zip(labels, probs):
+    print(f"P(|{l}| > 1) = {100*p:.3f}")
+
+# %%
