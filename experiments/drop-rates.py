@@ -42,3 +42,4 @@ plt.tight_layout()
 figi.savefig("docs/rarity_histogram.png")
 
 # %%
+plt.show()
