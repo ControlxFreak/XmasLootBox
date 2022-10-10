@@ -1,7 +1,7 @@
-# Discord NFT Advent Calendar
+# Discord Christmas NFT Loot Box Advent Calendar
 
 Merry Christmas!
-Welcome to the 2022 Discord NFT Advent Calendar!
+Welcome to the 2022 Discord Christmas NFT Loot Box Advent Calendar!
 
 Every day in the month of December, users will be able to interact with the Discord bot to claim a special gift, a completely unique (and real) NFT that will be minted to the Ethereum Goerli testnet and be placed in your very own Ethereum wallet!
 Every gift's artwork will be procedurally generated and created by an AI program ([Dalle-2](https://openai.com/dall-e-2/)) that translates natural language text into images.
