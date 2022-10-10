@@ -7,11 +7,11 @@ Every day in the month of December, users will be able to interact with the Disc
 Every gift's artwork will be procedurally generated and created by an AI program ([Dalle-2](https://openai.com/dall-e-2/)) that translates natural language text into images.
 Each NFT will be randomly generated with different atributes and rarity levels.
 Attributes include a variety of subjects, hats, eyes, beards, scarfs, and backgrounds!
-With over 271,881,792 possiblities, there is sure to be something for everyone!
+With over 22,656,816 possiblities, there is sure to be something for everyone!
 
 ... Also, as a special Christmas gift, Santa will be loading up your Ethereum wallets with $1 Billion dollars in Ethereum (~758,000 ETH), so feel free to set prices and trade NFTs amongst yourselves!
 
-There are 8 Rarity Levels (listed in order of increasing rarity):
+There are 7 Rarity Levels (listed in order of increasing rarity):
 
 | Rarity Level      |
 | -----------       |
@@ -20,7 +20,6 @@ There are 8 Rarity Levels (listed in order of increasing rarity):
 | Rare              |
 | Legendary         |
 | Mythical          |
-| Godly             |
 | N-F-Tacular       |
 | Christmas Miracle |
 
@@ -32,18 +31,17 @@ Once I generate your wallet addresses, you can see your NFT collection on [Opens
 # --------------------------------------------------------------- #
 # Rarity Level Overview
 
-There are 8 Rarity Levels of Advent NFTs.
+There are 7 Rarity Levels of Advent NFTs.
 
 | Rarity Level      | Initial Probabilities |
-| -----------       | -----------       |
-| Common            | 58.198 %          |
-| Uncommon          | 29.099 %          |
-| Rare              |  9.700 %          |
-| Legendary         |  2.425 %          |
-| Mythical          |  0.485 %          |
-| Godly             |  0.081 %          |
-| N-F-Tacular       |  0.012 %          |
-| Christmas Miracle |  0.001 %          |
+| -----------       | -----------           |
+| Common 		    | 58.199 %              |
+| Uncommon 		    | 29.099 %              |
+| Rare 		        | 9.700 %               |
+| Legendary 		| 2.425 %               |
+| Mythical 		    | 0.485 %               |
+| N-F-Tacular 		| 0.081 %               |
+| Christmas Miracle | 0.012 %               |
 
 Every week, the probability mass function (PMF) describing the "rarity" or "drop rate" for NFTs characterized by each Rarity Level will be modified as described in the PMF histograms.
 
@@ -61,10 +59,11 @@ Each rarity level has different frame options.
 | Uncommon          | <ul><li>Portal Blue</li><li>Portal Orange</li></ul> |
 | Rare              | <ul><li>Darkage [red]</li><li>Darkage [blue]</li></ul> |
 | Legendary         | <ul><li>Darkage [rgb]</li><li>Glitch [unstable]</li></ul> |
-| Mythical          | <ul><li>Glitch [Neon]</li><li>Neon Frame</li></ul> |
-| Godly             | <ul><li>Orange God Rays</li><li>Green God Rays</li></ul> |
-| N-F-Tacular       | <ul><li>Speedlines</li><li>Rain of gold</li></ul> |
-| Christmas Miracle | Human: fall flat christmas lights |
+| Mythical          | <ul><li>Glitch [Neon]</li><li>Neon Frame</li><li>Glitch Wave</li></ul> |
+| N-F-Tacular       | <ul><li>Speedlines</li><li>Rain of gold</li><li>Cat Graffiti</li></ul> |
+| Christmas Miracle | Christmas lights |
+
+Total Frames: 14
 
 ## Subjects
 
@@ -92,6 +91,7 @@ Each rarity level has different frame options.
 | Alan          |
 | Nala          |
 
+Total Subjects: 19
 
 ## Backgrounds
 
@@ -100,21 +100,28 @@ Each rarity level has different frame options.
 | None           |
 | Snow           |
 | Ice            |
+| Space          |
+| vv Only Christmas Miracle vv | 
 | Fireplace      |
 | Christmas Tree |
 | North Pole     |
-| Space          |
 
-## Headware
+Total Backgrounds: 7
 
-| Headware    |
+## Hats
+
+| Hats        |
 | ----------- | 
 | None        |
 | Winter Hat  |
 | Nightcap    |
+| vv Only N-F-Tacular + vv |
 | Robobt Head |
+| vv Only Christmas Miracle vv |
 | Santa Hat   |
 | Party Hat   |
+
+Total Hats: 6
 
 ## Eyes
 
@@ -125,14 +132,19 @@ Each rarity level has different frame options.
 | Blue           |
 | Brown          |
 | Green          |
+| vv Only Mythic + vv |
 | Purple         |
-| Pepermint      |
 | Neon           |
 | RGB            |
+| vv Only N-F-Tacular + vv |
 | Rainbow        |
 | Fire           |
 | Sunglasses     |
 | Laser eyes     |
+| vv Only Christmas Miracle vv |
+| Pepermint      |
+
+Total Eyes: 13
 
 ## Beards
 
@@ -144,12 +156,17 @@ Each rarity level has different frame options.
 | Blue           |
 | Brown          |
 | Green          |
+| vv Only Mythic + vv |
 | Purple         |
-| Pepermint      |
 | Neon           |
 | RGB            |
+| vv Only N-F-Tacular + vv |
 | Rainbow        |
 | Fire           |
+| vv Only Christmas Miracle vv |
+| Pepermint      |
+
+Total Beards: 12
 
 ## Scarfs
 
@@ -161,9 +178,14 @@ Each rarity level has different frame options.
 | Blue           |
 | Brown          |
 | Green          |
+| vv Only Mythic + vv |
 | Purple         |
-| Pepermint      |
 | Neon           |
 | RGB            |
+| vv Only N-F-Tacular + vv |
 | Rainbow        |
 | Fire           |
+| vv Only Christmas Miracle vv |
+| Pepermint      |
+
+Total Beards: 13

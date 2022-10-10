@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import poisson
 
 # Initialization
-labels = ["Common", "Uncommon", "Rare", "Legendary", "Mythical", "Godly", "N-F-Tacular", "Christmas Miracle"]
+labels = ["Common", "Uncommon", "Rare", "Legendary", "Mythical", "N-F-Tacular", "Christmas Miracle"]
 num_labels = len(labels)
 ids = np.arange(1, num_labels + 1)
 values = 2*ids
