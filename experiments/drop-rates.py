@@ -4,7 +4,7 @@ Rarity Level Statistics
 =======================
 The probability mass function (PMF) describing their rarity follows a sliding Poisson distribution.
 Each week, the mean of the Poisson PMF will change from [1, 2, 6, 16].
-The values of each rarity level remain fixed at 2 * [1,2,3,4,5,6,7,8].
+The values of each rarity level remain fixed at 2 * [1,2,3,4,5,6,7].
 """
 import os
 import numpy as np
@@ -16,10 +16,10 @@ labels = ["Common", "Uncommon", "Rare", "Legendary", "Mythical", "N-F-Tacular", 
 num_labels = len(labels)
 ids = np.arange(1, num_labels + 1)
 values = 2*ids
-mus = [1, 2, 6, 16]
+mus = [1, 2, 6, 12, 16]
 
 # Compute the PMFs everyday
-figi, axi = plt.subplots(nrows=4, ncols=1, sharex=True, figsize=(10, 15))
+figi, axi = plt.subplots(nrows=5, ncols=1, sharex=True, figsize=(10, 15))
 ipmfs = []
 for wi, mu in enumerate(mus):
     # Grab the pmf for these IDs
