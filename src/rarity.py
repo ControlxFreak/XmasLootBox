@@ -1,5 +1,5 @@
 # %%
-from typing import List
+from typing import List, Tuple
 import numpy as np
 from scipy.stats import poisson
 
@@ -39,5 +39,10 @@ def sample_rarity_level(week_num : int) -> int:
     samples = np.random.multinomial(n=1, pvals=pmf)
     return np.flatnonzero(samples)[0]
 
+def sample_attributes(rarity_level: int) -> Tuple[int,...]:
+    pass
+
+def sample_frame(rarity_level: int) -> int:
+    pass
 
 # %%

@@ -1,5 +1,6 @@
 
 # %%
+from os import makedirs
 from PIL import Image
 
 # Load the example image
@@ -14,7 +15,7 @@ frame_name = "christmas_lights"
 
 frame_gif = Image.open(f"../frames/{frame_name}.gif")
 
-image = Image.open("imgs/cat_santa.png")
+image = Image.open("../imgs/cat_santa_1.png")
 width, height = image.size
 
 # Create a black background image
@@ -46,7 +47,8 @@ try:
 except EOFError:
     pass # end of sequence
 
-gif_imgs[0].save('imgs/cat_santa_example.gif',
+makedirs("output/", exist_ok=True)
+gif_imgs[0].save('output/example.gif',
                save_all = True, append_images = gif_imgs[1:],
                optimize = False, duration = 10, loop=0)
 

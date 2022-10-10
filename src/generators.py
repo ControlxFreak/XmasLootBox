@@ -1,10 +1,11 @@
 from pydalle import Dalle
 from PIL import Image
-from typing import List
+from typing import List, Tuple
 
 def generate_dalle_art(username: str, password: str, description: str) -> List[Image]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
     """
+    # TODO: Add this back before release
     # ============================================== #
     # DO NOT CALL THIS YET!! IT WILL COST MONEY!!!
     # ============================================== #
@@ -28,3 +29,6 @@ def generate_dalle_art(username: str, password: str, description: str) -> List[I
 
     # Return the list of images
     return images
+
+def generate_dalle_description(attributes: Tuple[int])->str:
+    pass
