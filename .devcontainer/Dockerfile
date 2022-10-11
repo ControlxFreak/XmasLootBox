@@ -14,4 +14,4 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
    && rm -rf /tmp/pip-tmp
 
 # Install the web3.storage package
-RUN npm install web3.storage
+RUN npm install web3.storage dotenv

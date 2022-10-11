@@ -122,11 +122,26 @@ async def send_impish_msg(ctx):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=impish_file)
 
+async def send_error_msg(ctx):
+    """Sends the erorr message to the user"""
+    # Configure the message
+    embedVar = discord.Embed(
+        title=f"Well this is embarrassing...",
+        description=f"\
+            ```diff\n-An Error Occured Minting the NFTs for {ctx.message.author.name}...```\n\
+            Contact @aoth and he will try to fix it or mint it manually for you.",
+        color=0xff0000
+    )
+    shrug_file = discord.File("imgs/bot/shrug.jpg", filename="shrug.jpg")
+    embedVar.set_image(url="attachment://shrug.jpg")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=shrug_file)
+
 @bot.command()
 async def lootbox(ctx):
-    # Check if this sender has registered to play and has setup an Ethereum wallet
-    sender = ctx.message.author.name
-    if sender.lower() not in participants:
+    # Check if this username has registered to play and has setup an Ethereum wallet
+    username = ctx.message.author.name
+    if username.lower() not in participants:
         await send_no_wallet_msg(ctx)
         return
 
@@ -145,16 +160,14 @@ async def lootbox(ctx):
     #     await send_eoe_msg(ctx)
     #     return
 
-    # Check if a lootbox has been claimed today by the sender
-
-    # Check to see if this person has claimed a loot box today
-    if day_hash in claimed_days[sender]:
+    # Check to see if this user has claimed a loot box today
+    if day_hash in claimed_days[username]:
         await send_impish_msg(ctx)
         return
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today
-    claimed_days[sender].append(day_hash)
+    claimed_days[username].append(day_hash)
 
     # Send the admirable message
     await send_admirable_msg(ctx)
@@ -186,11 +199,23 @@ async def lootbox(ctx):
         add_frame(image_name, frame_name) for image_name in image_names
     ]
 
-    # Push the nfts to ipfs using the w3 node tool
+    # Save the NFT images to disk
 
-    # Mint the NFT
+    # Create the metadata JSON files
+
+    # Save the metadata files to disk
+
+    # Call our NodeJS tool to:
+    #   * Push the NFTs to IPFS
+    #   * Update the metadata JSON files with each NFT's corresponding CID location
+    #   * Push the metadata to IPFS
+    #   * Mint the NFTs
+    if os.system(f"node scripts/xmaslootbox.js {username} {nft_dir} {data_dir}"):
+        await send_error_msg(ctx)
+        return
 
     # Send a message to the new owner with images of their new NFTs!
+    await send_success_msg(ctx)
 
 
 # Run the bot
