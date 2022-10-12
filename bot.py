@@ -179,24 +179,24 @@ async def lootbox(ctx):
     await ctx.channel.send(f"Rarity Level: {rarity_level}")
 
     # Sample the atributes
-    attributes = sample_attributes(rarity_level)
+    # attributes = sample_attributes(rarity_level)
 
-    # Sample the frame
+    # # Sample the frame
     frame = sample_frame(rarity_level)
 
-    # Structure the text string
-    description = generate_dalle_description(attributes)
+    # # Structure the text string
+    # description = generate_dalle_description(attributes)
 
-    # Generate the artwork
-    images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
+    # # Generate the artwork
+    # images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
 
     # Save the artwork to disc
     # TODO: Fix this
-    image_names = [f"santa_cat_{i}.jpg" for i in range(4)]
+    image_names = [f"cat_santa_{i}" for i in range(1, 5)]
 
     # Add the frame to each image
     nfts = [
-        add_frame(image_name, frame_name) for image_name in image_names
+        add_frame(image_name, "speedlines") for image_name in image_names
     ]
 
     # Save the NFT images to disk
@@ -210,12 +210,12 @@ async def lootbox(ctx):
     #   * Update the metadata JSON files with each NFT's corresponding CID location
     #   * Push the metadata to IPFS
     #   * Mint the NFTs
-    if os.system(f"node scripts/xmaslootbox.js {username} {nft_dir} {data_dir}"):
-        await send_error_msg(ctx)
-        return
+    # if os.system(f"node scripts/xmaslootbox.js {username} {nft_dir} {data_dir}"):
+    #     await send_error_msg(ctx)
+    #     return
 
     # Send a message to the new owner with images of their new NFTs!
-    await send_success_msg(ctx)
+    # await send_success_msg(ctx)
 
 
 # Run the bot

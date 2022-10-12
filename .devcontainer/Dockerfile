@@ -13,5 +13,9 @@ COPY requirements.txt /tmp/pip-tmp/
 RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
    && rm -rf /tmp/pip-tmp
 
-# Install the web3.storage package
-RUN npm install web3.storage dotenv
+# Install web3
+# RUN npm install web3
+# # Install the web3.storage package
+# RUN npm install web3.storage
+# # Install the dotenv package
+# RUN npm install dotenv --save

@@ -1,11 +1,12 @@
 from PIL import Image
+from PIL.Image import Image as ImgType
 from typing import List
 
-def add_frame(image_name: str, frame_name: str) -> List[Image]:
+def add_frame(image_name: str, frame_name: str) -> List[ImgType]:
     """Adds an animated GIF frame to an image."""
     # Load the image and the frame
     image = Image.open(f"imgs/{image_name}.png")
-    frame_gif = Image.open(f"../frames/{frame_name}.gif")
+    frame_gif = Image.open(f"frames/{frame_name}.gif")
 
     # Get the image's size
     width, height = image.size

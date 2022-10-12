@@ -1,8 +1,9 @@
 from pydalle import Dalle
 from PIL import Image
-from typing import List, Tuple
+from PIL.Image import Image as ImgType
+from typing import List, Tuple, Any
 
-def generate_dalle_art(username: str, password: str, description: str) -> List[Image]:
+def generate_dalle_art(username: str, password: str, description: str) -> List[ImgType]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
     """
     # TODO: Add this back before release

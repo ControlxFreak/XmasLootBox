@@ -65,6 +65,10 @@ Each rarity level has different frame options.
 
 Total Frames: 14
 
+## Style????
+
+e.g., toon, realism, ?(meme, nft, crypto)?<-- I wonder what the AI would generate under those styles
+
 ## Subjects
 
 | Subjects      |
@@ -73,7 +77,7 @@ Total Frames: 14
 | Dog           |
 | Monkey        |
 | Panda         |
-| Bird          |
+| Owl           |
 | Lion          |
 | vv Mythical + vv | 
 | Baby          |
@@ -97,7 +101,6 @@ Total Subjects: 19
 
 | Backgrounds    |
 | -----------    | 
-| None           |
 | Snow           |
 | Ice            |
 | Space          |
@@ -116,6 +119,7 @@ Total Backgrounds: 7
 | Winter Hat  |
 | Nightcap    |
 | vv Only N-F-Tacular + vv |
+| Beanie      |
 | Robobt Head |
 | vv Only Christmas Miracle vv |
 | Santa Hat   |
