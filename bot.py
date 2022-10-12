@@ -161,9 +161,9 @@ async def lootbox(ctx):
     #     return
 
     # Check to see if this user has claimed a loot box today
-    if day_hash in claimed_days[username]:
-        await send_impish_msg(ctx)
-        return
+    # if day_hash in claimed_days[username]:
+    #     await send_impish_msg(ctx)
+    #     return
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today
@@ -174,30 +174,34 @@ async def lootbox(ctx):
 
     # Sample the rarity level
     # TODO: Use the real week number when it becomes time
-    rarity_level = sample_rarity_level(0)
+    rarity_level = sample_rarity_level(4)
     # TODO: Remove this debug message
     await ctx.channel.send(f"Rarity Level: {rarity_level}")
 
+    # TODO: Remove
+    rarity_level = "christmas miracle" # Just overwrite it for debugging
+
     # Sample the atributes
-    # attributes = sample_attributes(rarity_level)
+    attributes = sample_attributes(rarity_level)
 
     # # Sample the frame
     frame = sample_frame(rarity_level)
 
-    # # Structure the text string
-    # description = generate_dalle_description(attributes)
+    # Structure the text string
+    description = generate_dalle_description(attributes)
+    print(description)
 
     # # Generate the artwork
     # images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
 
     # Save the artwork to disc
     # TODO: Fix this
-    image_names = [f"cat_santa_{i}" for i in range(1, 5)]
+    # image_names = [f"cat_santa_{i}" for i in range(1, 5)]
 
-    # Add the frame to each image
-    nfts = [
-        add_frame(image_name, "speedlines") for image_name in image_names
-    ]
+    # # Add the frame to each image
+    # nfts = [
+    #     add_frame(image_name, "speedlines") for image_name in image_names
+    # ]
 
     # Save the NFT images to disk
 

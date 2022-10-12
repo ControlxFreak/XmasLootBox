@@ -1,5 +1,5 @@
 # %%
-from typing import List, Tuple, Optional, Dict
+from typing import List, Optional, Dict
 import numpy as np
 from scipy.stats import poisson
 import random
@@ -54,14 +54,6 @@ def get_subjects(rarity_level: int) -> List[str]:
         "dragon",
         "reindeer",
         "santa claus",
-        "butters",
-        "jinx",
-        "starfire",
-        "patrick",
-        "phillip",
-        "winston",
-        "allan",
-        "nalla"
     ]
 
     if rarity_level < 4:
@@ -74,6 +66,10 @@ def get_subjects(rarity_level: int) -> List[str]:
 
     # Must be christmas miracle
     return subjects
+
+def get_ages() -> List[Optional[str]]:
+    """Get the list of possible ages."""
+    return [None, "baby", "young", "old"]
 
 def get_hats(rarity_level: int) -> List[Optional[str]]:
     """Get the list of hats available to be sampled at a given rarity level."""
@@ -112,7 +108,7 @@ def get_eyes(rarity_level: int) -> List[str]:
         "rainbow",
         "fire",
         "sunglasses",
-        "laser eyes",
+        "laser beam",
         "pepermint"
     ]
 
@@ -197,8 +193,8 @@ def get_scarfs(rarity_level: int) -> List[Optional[str]]:
 def get_backgrounds(rarity_level: int) -> List[str]:
     """Get the list of backgrounds available to be sampled at a given rarity level."""
     backgorunds = [
-        "snow",
-        "ice",
+        "snowy",
+        "icey",
         "space",
         "fireplace",
         "christmas tree",
@@ -209,6 +205,23 @@ def get_backgrounds(rarity_level: int) -> List[str]:
         return backgorunds[:2]
     # Must be Christmas Miracle
     return backgorunds
+
+def get_styles() -> List[str]:
+    """Get the list of possible artistic styles."""
+    return ["realistic", "toon", "meme", "NFT"]
+
+def get_pets() -> List[str]:
+    """Return the list of pet names."""
+    return [
+        "butters",
+        "jinx",
+        "starfire",
+        "patrick",
+        "phillip",
+        "winston",
+        "allan",
+        "nalla"
+    ]
 
 def sample_rarity_level(week_num : int) -> str:
     """Sample a rarity level based on the PMF for this week!
@@ -241,35 +254,45 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
     # Get the rarity level
     rarity_level = rarity_label_to_level(rarity_label)
 
+    # Sample the age
+    ages = get_ages()
+    age = random.choice(ages)
+    attributes["age"] = age
+
     # Sample the subject
     subjects = get_subjects(rarity_level)
     subject = random.choice(subjects)
     attributes["subject"] = subject
-
-    # Sample the hat
-    hats = get_hats(rarity_level)
-    hat = random.choice(hats)
-    attributes["hat"] = hat
-
-    # Sample the eyes
-    eyes = get_eyes(rarity_level)
-    eye = random.choice(eyes)
-    attributes["eyes"] = eye
 
     # Sample the beard
     beards = get_beards(rarity_level)
     beard = random.choice(beards)
     attributes["beard"] = beard
 
+    # Sample the eyes
+    eyes = get_eyes(rarity_level)
+    eye = random.choice(eyes)
+    attributes["eyes"] = eye
+
+    # Sample the hat
+    hats = get_hats(rarity_level)
+    hat = random.choice(hats)
+    attributes["hat"] = hat
+
     # Sample the scarfs
     scarfs = get_scarfs(rarity_level)
     scarf = random.choice(scarfs)
-    attributes["scarfs"] = scarf
+    attributes["scarf"] = scarf
 
     # Sample the background
     backgrounds = get_backgrounds(rarity_level)
     background = random.choice(backgrounds)
-    attributes["backgrounds"] = background
+    attributes["background"] = background
+
+    # Sample the style
+    styles = get_styles()
+    style = random.choice(styles)
+    attributes["style"] = style
 
     return attributes
 
