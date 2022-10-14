@@ -65,6 +65,10 @@ Each rarity level has different frame options.
 
 Total Frames: 14
 
+## Age???
+
+e.g., None, baby, old
+
 ## Style????
 
 e.g., toon, realism, ?(meme, nft, crypto)?<-- I wonder what the AI would generate under those styles

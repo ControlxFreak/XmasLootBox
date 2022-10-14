@@ -17,5 +17,8 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
 # RUN npm install web3
 # # Install the web3.storage package
 # RUN npm install web3.storage
+# RUN npm install -g @web3-storage/w3
+# # Install ethers.js
+# RUN npm install --save ethers
 # # Install the dotenv package
 # RUN npm install dotenv --save

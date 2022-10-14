@@ -25,7 +25,7 @@ def generate_dalle_art(username: str, password: str, description: str) -> List[I
     # TEMPORARILY USE MY EXAMPLE IMAGES!!!
     # ============================================== #
     images = [
-        Image.open("imgs/cat_santa_{i}.png") for i in range(4)
+        Image.open(f"imgs/{i}.png") for i in range(1,5)
     ]
 
     # Return the list of images
@@ -105,3 +105,25 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
     s += " style"
 
     return s
+
+def generate_erc721_metadata(attributes: Dict[str, str]) -> Dict[str, str]:
+    """Generate a dictionary that complies with the ERC721 metadata standard."""
+    metadata = {
+        "name": "Xmas Lootbox Reward # {0}",
+        "description": "",
+        "image": "<UPDATE WITH IPFS CID>",
+    }
+
+    # Reformat the attributes into ERC721 compliance
+    fmt_attributes = [
+        {
+            "trait_type": key,
+            "value": value,
+        }
+        for key, value in attributes.items()
+    ]
+
+    # Append this to the metadata dictionary and return
+    metadata["attributes"] = fmt_attributes
+
+    return metadata

@@ -1,4 +1,7 @@
+from calendar import week
 import os
+from copy import deepcopy
+import json
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -6,7 +9,7 @@ import datetime
 from collections import defaultdict
 from typing import Tuple
 from src.rarity import sample_rarity_level, sample_attributes, sample_frame
-from src.generators import generate_dalle_description, generate_dalle_art
+from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata
 from src.artists import add_frame
 
 # Initialize the enviornment variables
@@ -18,14 +21,17 @@ OPENAI_USERNAME = os.getenv("OPENAI_USERNAME")
 OPENAI_PASSWORD = os.getenv("OPENAI_PASSWORD")
 OPENSEA_CONTRACT_URL = "TODO"
 
+FRAME_DIR = "frames/"
+NFT_DIR = "nfts/"
+
 VALID_YEAR = 2022
 START_WEEK = 49
 END_WEEK = 53
 
 # Initialize the daily present mapping and the participant list
-# TODO: Store this in a database or file or something persistent in case the bot goes down
 claimed_days = defaultdict(list)
 participants = ["aoth"]
+next_nft_id = 1
 
 # Initialize the discord bot
 intents = discord.Intents.default()
@@ -139,6 +145,9 @@ async def send_error_msg(ctx):
 
 @bot.command()
 async def lootbox(ctx):
+    # TODO: This is temporary until I get persistent data
+    global next_nft_id
+
     # Check if this username has registered to play and has setup an Ethereum wallet
     username = ctx.message.author.name
     if username.lower() not in participants:
@@ -174,34 +183,63 @@ async def lootbox(ctx):
 
     # Sample the rarity level
     # TODO: Use the real week number when it becomes time
-    rarity_level = sample_rarity_level(4)
-    # TODO: Remove this debug message
-    await ctx.channel.send(f"Rarity Level: {rarity_level}")
+    # rarity_level = sample_rarity_level(week_num)
+    rarity_level = "christmas miracle"
 
-    # TODO: Remove
-    rarity_level = "christmas miracle" # Just overwrite it for debugging
-
-    # Sample the atributes
+    # Sample the metadata
     attributes = sample_attributes(rarity_level)
-
-    # # Sample the frame
-    frame = sample_frame(rarity_level)
 
     # Structure the text string
     description = generate_dalle_description(attributes)
-    print(description)
+    await ctx.channel.send(f"Generating:\n{description}")
 
-    # # Generate the artwork
-    # images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
+    # Generate the artwork
+    images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
 
-    # Save the artwork to disc
+    # Sample the frame
+    # TODO: Update
+    # frame_name = sample_frame(rarity_level)
+    frame_name = "cat_crime_graffiti"
+    frame_path = os.path.join(FRAME_DIR, f"{frame_name}.gif")
+
+    # Add the frame to each image
+    nft_imgs = [
+        add_frame(image, frame_path) for image in images
+    ]
+
+    # Generate the ERC721-compliant metadata json
+    metadata = generate_erc721_metadata(attributes)
+
+    # Generate a unique path to this NFT directory
+    # This will just be in "NFT_DIR/<starting NFT id>/"
+    unq_nft_dir = os.path.join(NFT_DIR, f"{next_nft_id}")
+    unq_nft_img_dir = os.path.join(unq_nft_dir, "imgs")
+    unq_nft_dat_dir = os.path.join(unq_nft_dir, "data")
+    os.makedirs(unq_nft_img_dir, exist_ok=True)
+    os.makedirs(unq_nft_dat_dir, exist_ok=True)
+
+    # Save the images and metadata to disk
+    for nft_img in nft_imgs:
+        print(f"Saving nft {next_nft_id}...")
+
+        # First, save the gif
+        nft_img[0].save(os.path.join(unq_nft_img_dir, f"{next_nft_id}.gif"),
+                    save_all = True, append_images = nft_img[1:],
+                    optimize = False, duration = 10, loop=0)
+
+        # Second, save the metadata
+        metadata_cpy = deepcopy(metadata)
+        metadata_cpy["name"] = metadata_cpy["name"].format(next_nft_id)
+        metadata_cpy["description"] = description
+
+        with open(os.path.join(unq_nft_dat_dir, f"{next_nft_id}.json"), "w") as outfile:
+            json.dump(metadata_cpy, outfile)
+
+        next_nft_id+=1
+
     # TODO: Fix this
     # image_names = [f"cat_santa_{i}" for i in range(1, 5)]
 
-    # # Add the frame to each image
-    # nfts = [
-    #     add_frame(image_name, "speedlines") for image_name in image_names
-    # ]
 
     # Save the NFT images to disk
 

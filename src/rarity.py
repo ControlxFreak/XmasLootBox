@@ -254,6 +254,9 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
     # Get the rarity level
     rarity_level = rarity_label_to_level(rarity_label)
 
+    # Set the rarity
+    attributes["rarity"] = rarity_label
+
     # Sample the age
     ages = get_ages()
     age = random.choice(ages)

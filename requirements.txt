@@ -4,3 +4,4 @@ pydalle[all]
 matplotlib
 numpy
 scipy
+web3

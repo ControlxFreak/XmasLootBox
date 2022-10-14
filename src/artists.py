@@ -1,17 +1,17 @@
+import os
 from PIL import Image
 from PIL.Image import Image as ImgType
 from typing import List
 
-def add_frame(image_name: str, frame_name: str) -> List[ImgType]:
+def add_frame(image: Image, frame_path: str) -> List[ImgType]:
     """Adds an animated GIF frame to an image."""
-    # Load the image and the frame
-    image = Image.open(f"imgs/{image_name}.png")
-    frame_gif = Image.open(f"frames/{frame_name}.gif")
+    # Load the frame
+    frame_gif = Image.open(frame_path)
 
     # Get the image's size
     width, height = image.size
 
-    if frame_name.lower() in ["speedlines", "rain_of_gold"]:
+    if os.path.basename(frame_path).lower() in ["speedlines.gif", "rain_of_gold.gif"]:
         # NOTE: The speedlines and rain of gold frames look a lot better
         #       if you don't create a buffer border.
         offset = 0
