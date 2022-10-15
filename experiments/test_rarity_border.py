@@ -15,7 +15,7 @@ frame_name = "christmas_lights"
 
 frame_gif = Image.open(f"../frames/{frame_name}.gif")
 
-image = Image.open("../imgs/cat_santa_1.png")
+image = Image.open("../imgs/example/1.png")
 width, height = image.size
 
 # Create a black background image

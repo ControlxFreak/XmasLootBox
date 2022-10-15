@@ -25,7 +25,7 @@ def generate_dalle_art(username: str, password: str, description: str) -> List[I
     # TEMPORARILY USE MY EXAMPLE IMAGES!!!
     # ============================================== #
     images = [
-        Image.open(f"imgs/{i}.png") for i in range(1,5)
+        Image.open(f"imgs/example/{i}.png") for i in range(1,5)
     ]
 
     # Return the list of images

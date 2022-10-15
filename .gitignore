@@ -1,6 +1,7 @@
 .env
 .venv
 .swp
+nfts/
 
 node_modules/
 package*.json
