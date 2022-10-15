@@ -1,35 +1,33 @@
 #!/usr/bin/node
 const { Web3Storage, getFilesFromPath } = require("web3.storage");
 const ethers = require("ethers");
-const argv = require('node:process');
 const path = require('path');
-const fs = require('fs')
+const fs = require('fs');
 require('dotenv').config()
 
 // ----------------------------------------------------------------- //
 // Configuration
 // ----------------------------------------------------------------- //
 // Extract the information from the input arguments
-const username = process.argv[2]
+const username = process.argv[2].toLowerCase()
 const nft_dir = process.argv[3]
 const data_dir = process.argv[4]
 
 // Construct the web3 storage IPFS client
 const w3sclient = new Web3Storage({ token: process.env.W3STORAGE_API_TOKEN });
 
-// Construct the address mappings
-const addresses = {
-  "aoth": "0x3fAb8CC827b4C41Dc9e6C07d522fD2f48A431f23"
-}
-
-// Configure the owner's address and private key
+// Configure the address and private key
 const owner_address = process.env.OWNER_ADDRESS
 const private_key = process.env.OWNER_PRIVATE_KEY
 
+const addresses = {
+  "aoth": owner_address
+}
+
 // Configure the Ethereum Network provider
 const provider = new ethers.providers.AlchemyProvider(
-    "goerli",
-    process.env.ALCHEMY_API_TOKEN
+  "goerli",
+  process.env.ALCHEMY_API_TOKEN
 )
 
 // Configure the wallet
@@ -58,7 +56,7 @@ async function main(){
   // Put the NFT images on IPFS
   // =============================================================== //
   const nft_root = await w3sclient.put(nft_files, { wrapWithDirectory: false });
-  const nft_base_uri = `https://${nft_root}.ipfs.w3s.link/`
+  const nft_base_uri = `https:\/\/${nft_root}.ipfs.w3s.link/`
   console.log("Uploaded NFT Images to: ", nft_base_uri)
 
   // =============================================================== //
@@ -66,14 +64,17 @@ async function main(){
   // =============================================================== //
   for (const data_file of data_files) {
     // Get the basename of this file (which should be the tokenID)
-    let tokenID = path.basename(data_file.name, '.json');
+    var tokenID = path.basename(data_file.name, '.json');
 
     // Read this file
-    let data_path = path.join(data_dir, tokenID.concat(".json"))
-    let metadata = JSON.parse(fs.readFileSync(data_path));
+    var data_path = path.join(data_dir, tokenID.concat(".json"))
+    var metadata = JSON.parse(fs.readFileSync(data_path))
 
     // Update the image field with the NFT image's corresponding CID
-    metadata.image = path.join(nft_base_uri, tokenID.concat(".gif"));
+    var nft_uri = new URL(tokenID.concat(".gif"), nft_base_uri).href
+    console.log("Updated Metadata URI: ", nft_uri)
+    metadata.image = nft_uri
+    console.log(metadata)
 
     // Overwrite the json file
     fs.writeFileSync(data_path, JSON.stringify(metadata), (err) => {
@@ -88,7 +89,7 @@ async function main(){
   // Push the data files to IPFS
   // =============================================================== //
   const data_root = await w3sclient.put(data_files, { wrapWithDirectory: false });
-  const data_base_uri = `https://${data_root}.ipfs.w3s.link/`
+  const data_base_uri = `https:\/\/${data_root}.ipfs.w3s.link/`
   console.log("Uploaded Metadata to: ", data_base_uri)
 
   // =============================================================== //
@@ -98,20 +99,22 @@ async function main(){
   const user_address = addresses[username]
   const prev_balance = await contract.balanceOf(user_address)
   console.log("Minting NFTs to User Address: ", user_address)
-  console.log("Previous Balance: ", prev_balance)
+  console.log("User originally has an NFT Balance of: ", prev_balance)
 
   var txarray = [];
   for (const data_file of data_files) {
     // Get the basename of this file (which should be the tokenID)
-    let tokenID = path.basename(data_file.name, '.json');
+    var tokenID = path.basename(data_file.name, '.json');
 
     // Call the mintNFT function in the smart contract
-    let tx = await connected_contract.mintNFT(
+    var data_uri = new URL(tokenID.concat(".json"), data_base_uri).href
+    console.log("Minting with URI: ", data_uri)
+    var tx = await connected_contract.mintNFT(
       user_address,
-      path.join(data_base_uri, tokenID.concat(".json"))
+      data_uri
     )
     txarray.push(tx)
-    
+
     console.log("Minted Token ID: ", tokenID, " to ", username, "!")
   }
 
@@ -119,6 +122,14 @@ async function main(){
   for(const tx of txarray) {
     await tx.wait()
   }
+
+  // Show that your balance increased
+  const post_balance = await contract.balanceOf(user_address)
+  console.log("User now has an NFT Balance of: ", post_balance)
+
+  // Report the amount of ether remaining in the owner
+  const remaining_eth = await provider.getBalance(owner_address)
+  console.log("Owner has: ", ethers.utils.formatEther(remaining_eth), " ETH remaining")
 
 }
 

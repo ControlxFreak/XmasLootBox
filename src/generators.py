@@ -121,6 +121,7 @@ def generate_erc721_metadata(attributes: Dict[str, str]) -> Dict[str, str]:
             "value": value,
         }
         for key, value in attributes.items()
+        if value is not None
     ]
 
     # Append this to the metadata dictionary and return

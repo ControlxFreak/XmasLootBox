@@ -22,3 +22,5 @@ RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requ
 # RUN npm install --save ethers
 # # Install the dotenv package
 # RUN npm install dotenv --save
+# # Install url-join
+# RUN npm install url-join

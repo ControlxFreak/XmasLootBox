@@ -9,7 +9,8 @@ def add_frame(image: Image, frame_path: str) -> List[ImgType]:
     frame_gif = Image.open(frame_path)
 
     # Get the image's size
-    width, height = image.size
+    width, height = 512, 512
+    image = image.resize((width, height))
 
     if os.path.basename(frame_path).lower() in ["speedlines.gif", "rain_of_gold.gif"]:
         # NOTE: The speedlines and rain of gold frames look a lot better
@@ -18,7 +19,7 @@ def add_frame(image: Image, frame_path: str) -> List[ImgType]:
     else:
         # NOTE: This offset creates a buffer border to prevent the frame from
         #       overlapping the image.
-        offset = 275
+        offset = 140
 
     # Create the base background image and paste the desired image ontop
     base_layer = Image.new(mode="RGB", size=(width + offset, height + offset))

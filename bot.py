@@ -31,7 +31,7 @@ END_WEEK = 53
 # Initialize the daily present mapping and the participant list
 claimed_days = defaultdict(list)
 participants = ["aoth"]
-next_nft_id = 1
+next_nft_id = 32
 
 # Initialize the discord bot
 intents = discord.Intents.default()
@@ -98,7 +98,7 @@ async def send_admirable_msg(ctx):
     """Sends the admirable message!"""
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Generating NFTs for {ctx.message.author.name}!",
+        title=f"Generating Loot for {ctx.message.author.name}!",
         description=f"\
             ```diff\n+It Seems You Have Been Quite Admirable This Year!```\n\
             **Please stand-by while my elves generate your daily gifts!**\n\
@@ -143,6 +143,21 @@ async def send_error_msg(ctx):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=shrug_file)
 
+# async def send_success_msg(ctx):
+#     """Send the success message."""
+#     # Configure the message
+#     embedVar = discord.Embed(
+#         title=f"Merry Christmas {ctx.message.author.name}!",
+#         description=f"\
+#         ",
+#         color=0xff0000
+#     )
+#     shrug_file = discord.File("imgs/bot/shrug.jpg", filename="shrug.jpg")
+#     embedVar.set_image(url="attachment://shrug.jpg")
+#     # Send the message to the channel
+#     await ctx.channel.send(embed=embedVar, file=shrug_file)
+#     https://testnets.opensea.io/assets/goerli/goerli/0x3fAb8CC827b4C41Dc9e6C07d522fD2f48A431f23
+
 @bot.command()
 async def lootbox(ctx):
     # TODO: This is temporary until I get persistent data
@@ -184,7 +199,7 @@ async def lootbox(ctx):
     # Sample the rarity level
     # TODO: Use the real week number when it becomes time
     # rarity_level = sample_rarity_level(week_num)
-    rarity_level = "christmas miracle"
+    rarity_level = "n-f-tacular"
 
     # Sample the metadata
     attributes = sample_attributes(rarity_level)
@@ -199,7 +214,8 @@ async def lootbox(ctx):
     # Sample the frame
     # TODO: Update
     # frame_name = sample_frame(rarity_level)
-    frame_name = "cat_crime_graffiti"
+    # frame_name = "cat_crime_graffiti"
+    frame_name = "neon_frame"
     frame_path = os.path.join(FRAME_DIR, f"{frame_name}.gif")
 
     # Add the frame to each image
@@ -237,24 +253,14 @@ async def lootbox(ctx):
 
         next_nft_id+=1
 
-    # TODO: Fix this
-    # image_names = [f"cat_santa_{i}" for i in range(1, 5)]
-
-
-    # Save the NFT images to disk
-
-    # Create the metadata JSON files
-
-    # Save the metadata files to disk
-
     # Call our NodeJS tool to:
     #   * Push the NFTs to IPFS
     #   * Update the metadata JSON files with each NFT's corresponding CID location
     #   * Push the metadata to IPFS
     #   * Mint the NFTs
-    # if os.system(f"node scripts/xmaslootbox.js {username} {nft_dir} {data_dir}"):
-    #     await send_error_msg(ctx)
-    #     return
+    if os.system(f"node scripts/xmaslootbox.js {username} {unq_nft_img_dir} {unq_nft_dat_dir}"):
+        await send_error_msg(ctx)
+        return
 
     # Send a message to the new owner with images of their new NFTs!
     # await send_success_msg(ctx)

@@ -20,7 +20,7 @@ def rarity_label_to_level(rarity_label: str) -> int:
     """Convert a rarity label string to an integer level."""
     rarity_labels = get_rarity_labels()
     label_map = {f"{s}":i for i, s in enumerate(rarity_labels)}
-    return label_map[rarity_label]
+    return label_map[rarity_label.lower()]
 
 def rarity_level_to_label(rarity_level: int) -> str:
     """Convert a rarity level integer to an rarity label."""
@@ -38,7 +38,7 @@ def get_frame_names(rarity_label: str) -> Dict[str, List[Optional[str]]]:
         "n-f-tacular": ["speedliness", "rain_of_gold", "cat_crime_graffiti"],
         "christmas miracle": ["christmas_lights"]
     }
-    return frame_map[rarity_label]
+    return frame_map[rarity_label.lower()]
 
 def get_subjects(rarity_level: int) -> List[str]:
     """Get the list of subjects available to be sampled at a given rarity level."""
