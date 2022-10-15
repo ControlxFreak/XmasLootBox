@@ -10,8 +10,8 @@ from PIL import Image
 # frame_name = "speedlines"
 # frame_name = "glitch_wave"
 # frame_name = "darkage_red"
-# frame_name = "rain_of_gold"
-frame_name = "christmas_lights"
+frame_name = "rain_of_gold"
+# frame_name = "christmas_lights"
 
 frame_gif = Image.open(f"../frames/{frame_name}.gif")
 
