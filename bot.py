@@ -11,6 +11,8 @@ from typing import Tuple
 from src.rarity import sample_rarity_level, sample_attributes, sample_frame
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata
 from src.artists import add_frame
+import warnings
+warnings.filterwarnings("ignore")
 
 # Initialize the enviornment variables
 load_dotenv()
@@ -31,7 +33,6 @@ END_WEEK = 53
 # Initialize the daily present mapping and the participant list
 claimed_days = defaultdict(list)
 participants = ["aoth"]
-next_nft_id = 32
 
 # Initialize the discord bot
 intents = discord.Intents.default()
@@ -143,25 +144,27 @@ async def send_error_msg(ctx):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=shrug_file)
 
-# async def send_success_msg(ctx):
-#     """Send the success message."""
-#     # Configure the message
-#     embedVar = discord.Embed(
-#         title=f"Merry Christmas {ctx.message.author.name}!",
-#         description=f"\
-#         ",
-#         color=0xff0000
-#     )
-#     shrug_file = discord.File("imgs/bot/shrug.jpg", filename="shrug.jpg")
-#     embedVar.set_image(url="attachment://shrug.jpg")
-#     # Send the message to the channel
-#     await ctx.channel.send(embed=embedVar, file=shrug_file)
-#     https://testnets.opensea.io/assets/goerli/goerli/0x3fAb8CC827b4C41Dc9e6C07d522fD2f48A431f23
+async def send_success_msg(ctx, ):
+    """Send the success message."""
+    # Configure the message
+    embedVar = discord.Embed(
+        title=f"Your Loot is available, {ctx.message.author.name}!",
+        description=f"\
+        See our updated collection on [OpenSea](https://testnets.opensea.io/collection/testtoken-omxohyckpo?search[sortAscending]=false&search[sortBy]=CREATED_DATE)!",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+    # Send the NFTs
+    # TODO: Temporary
+    nft_file = discord.File("nfts/1/imgs/1.gif", filename="nft.gif")
+    await ctx.channel.send(file=nft_file)
 
 @bot.command()
 async def lootbox(ctx):
-    # TODO: This is temporary until I get persistent data
-    global next_nft_id
+    # Get the next NFT ID
+    with open('next_id', 'r') as f:
+        next_nft_id = int(f.readline())
 
     # Check if this username has registered to play and has setup an Ethereum wallet
     username = ctx.message.author.name
@@ -199,7 +202,7 @@ async def lootbox(ctx):
     # Sample the rarity level
     # TODO: Use the real week number when it becomes time
     # rarity_level = sample_rarity_level(week_num)
-    rarity_level = "n-f-tacular"
+    rarity_level = "legendary"
 
     # Sample the metadata
     attributes = sample_attributes(rarity_level)
@@ -212,10 +215,7 @@ async def lootbox(ctx):
     images = generate_dalle_art(OPENAI_USERNAME, OPENAI_PASSWORD, description)
 
     # Sample the frame
-    # TODO: Update
-    # frame_name = sample_frame(rarity_level)
-    # frame_name = "cat_crime_graffiti"
-    frame_name = "neon_frame"
+    frame_name = sample_frame(rarity_level)
     frame_path = os.path.join(FRAME_DIR, f"{frame_name}.gif")
 
     # Add the frame to each image
@@ -263,7 +263,7 @@ async def lootbox(ctx):
         return
 
     # Send a message to the new owner with images of their new NFTs!
-    # await send_success_msg(ctx)
+    await send_success_msg(ctx)
 
 
 # Run the bot

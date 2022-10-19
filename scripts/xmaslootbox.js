@@ -56,7 +56,7 @@ async function main(){
   // Put the NFT images on IPFS
   // =============================================================== //
   const nft_root = await w3sclient.put(nft_files, { wrapWithDirectory: false });
-  const nft_base_uri = `https:\/\/${nft_root}.ipfs.w3s.link/`
+  const nft_base_uri = `ipfs:\/\/${nft_root}/`
   console.log("Uploaded NFT Images to: ", nft_base_uri)
 
   // =============================================================== //
@@ -89,7 +89,7 @@ async function main(){
   // Push the data files to IPFS
   // =============================================================== //
   const data_root = await w3sclient.put(data_files, { wrapWithDirectory: false });
-  const data_base_uri = `https:\/\/${data_root}.ipfs.w3s.link/`
+  const data_base_uri = `ipfs:\/\/${data_root}/`
   console.log("Uploaded Metadata to: ", data_base_uri)
 
   // =============================================================== //
@@ -101,7 +101,6 @@ async function main(){
   console.log("Minting NFTs to User Address: ", user_address)
   console.log("User originally has an NFT Balance of: ", prev_balance)
 
-  var txarray = [];
   for (const data_file of data_files) {
     // Get the basename of this file (which should be the tokenID)
     var tokenID = path.basename(data_file.name, '.json');
@@ -113,14 +112,9 @@ async function main(){
       user_address,
       data_uri
     )
-    txarray.push(tx)
+    await tx.wait()
 
     console.log("Minted Token ID: ", tokenID, " to ", username, "!")
-  }
-
-  // Wait for the transactions to be official before returning
-  for(const tx of txarray) {
-    await tx.wait()
   }
 
   // Show that your balance increased
