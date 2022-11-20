@@ -32,7 +32,7 @@ def get_frame_names(rarity_label: str) -> Dict[str, List[Optional[str]]]:
     frame_map = {
         "common": [None],
         "uncommon": ["portal_blue","portal_orange"],
-        "rare": ["darakge_red", "darkage_blue"],
+        "rare": ["darkage_red", "darkage_blue"],
         "legendary": ["darkage_rgb", "glitch_unstable"],
         "mythical": ["glitch_neon", "neon_frame", "glitch_wave"],
         "n-f-tacular": ["speedlines", "rain_of_gold", "cat_crime_graffiti"],
@@ -208,7 +208,7 @@ def get_backgrounds(rarity_level: int) -> List[str]:
 
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
-    return ["realistic", "toon", "meme", "NFT"]
+    return ["realistic", "toon", "meme", "NFT", "pixel"]
 
 def get_pets() -> List[str]:
     """Return the list of pet names."""
@@ -223,8 +223,8 @@ def get_pets() -> List[str]:
         "nalla"
     ]
 
-def sample_rarity_level(week_num : int) -> str:
-    """Sample a rarity level based on the PMF for this week!
+def sample_rarity_label(week_num : int) -> str:
+    """Sample a rarity label based on the PMF for this week!
 
     The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
     """
@@ -245,6 +245,14 @@ def sample_rarity_level(week_num : int) -> str:
     samples = np.random.multinomial(n=1, pvals=pmf)
     rarity_level = np.flatnonzero(samples)[0]
     return rarity_level_to_label(rarity_level)
+
+def sample_rarity_label_uniform() -> str:
+    """Sample a rarity label according to a uniform distribution.
+    """
+    # Grab the labels and IDs
+    rarity_labels = get_rarity_labels()
+    p = [1/48, 2/48, 2/48, 6/48, 12/48, 12/48, 13/48]
+    return np.random.choice(rarity_labels, p=p)
 
 def sample_attributes(rarity_label: str) -> Dict[str, str]:
     """Sample the attributes based on the rarity level."""

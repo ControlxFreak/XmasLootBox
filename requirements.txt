@@ -1,6 +1,6 @@
 discord
 python-dotenv
-pydalle[all]
+dalle2
 matplotlib
 numpy
 scipy

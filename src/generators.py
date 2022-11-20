@@ -1,32 +1,27 @@
-from pydalle import Dalle
+from typing import List, Dict
 from PIL import Image
 from PIL.Image import Image as ImgType
-from typing import List, Tuple, Any, Dict
+from dalle2 import Dalle2
 
-def generate_dalle_art(username: str, password: str, description: str) -> List[ImgType]:
+def generate_dalle_art(dalle : Dalle2, description: str, sim : bool = True) -> List[ImgType]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
+
+    If sim is `True`, this will return the example images located in `assets/example/`.
+    If sim is `False`, this will call the dalle2 api and generate real images.
+
+    DO NOT CALL WITH `sim=True` UNTIL YOU ARE READY!! IT WILL COST MONEY!!!
     """
-    # TODO: Add this back before release
-    # ============================================== #
-    # DO NOT CALL THIS YET!! IT WILL COST MONEY!!!
-    # ============================================== #
-    # # Configure the Dalle Client
-    # client = Dalle(username, password)
-
-    # # Invoke the text2im API
-    # text2im_task = client.text2im(description)
-
-    # # Download the images and save them to disk
-    # images = []
-    # for image in text2im_task.download():
-    #     images.append(image.to_pil())
-
-    # ============================================== #
-    # TEMPORARILY USE MY EXAMPLE IMAGES!!!
-    # ============================================== #
-    images = [
-        Image.open(f"imgs/example/{i}.png") for i in range(1,5)
-    ]
+    if sim:
+        # Load the example images
+        images = [
+            Image.open(f"assets/example/{i}.png") for i in range(1,5)
+        ]
+    else:
+        # Generate and download new Dalle2 images
+        generations = dalle.generate_and_download(description,image_dir="out/")
+        images = []
+        for gen in generations:
+            images.append(Image.open(gen))
 
     # Return the list of images
     return images
@@ -68,19 +63,20 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
 
     # ======================================== #
     # Add the accessories
-    s += "wearing a "
-
     has_hat = False
     if attributes["hat"] is not None:
         has_hat = True
+        s += "wearing a "
         s += attributes["hat"]
         s += " "
-    
+
     if not has_eyes:
         # This means we must be wearing sunglasses
         # so this should be considered an accessory rather than a feature
         if has_hat:
             s += ", "
+        else:
+            s += "wearing a "
 
         s += attributes["eyes"]
         s += " "
@@ -88,8 +84,11 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
     if attributes["scarf"] is not None:
         if has_hat or not has_eyes:
             s += "and a "
-            s += attributes["scarf"]
-            s += " scarf "
+        else:
+            s += "wearing a "
+
+        s += attributes["scarf"]
+        s += " scarf "
 
     # ======================================== #
     # Add the background
@@ -106,11 +105,11 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
 
     return s
 
-def generate_erc721_metadata(attributes: Dict[str, str]) -> Dict[str, str]:
+def generate_erc721_metadata(attributes: Dict[str, str], description: str) -> Dict[str, str]:
     """Generate a dictionary that complies with the ERC721 metadata standard."""
     metadata = {
         "name": "Xmas Lootbox Reward # {0}",
-        "description": "",
+        "description": description,
         "image": "<UPDATE WITH IPFS CID>",
     }
 

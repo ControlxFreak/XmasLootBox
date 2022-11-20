@@ -27,7 +27,7 @@ const addresses = {
 // Configure the Ethereum Network provider
 const provider = new ethers.providers.AlchemyProvider(
   "goerli",
-  process.env.ALCHEMY_API_TOKEN
+  process.env.ALCHEMY_TOKEN
 )
 
 // Configure the wallet
