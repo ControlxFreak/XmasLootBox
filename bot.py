@@ -18,7 +18,7 @@ from src.generators import generate_dalle_description, generate_dalle_art, gener
 from src.artists import add_frame
 from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_error_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account
 from src.constants import START_WEEK, END_WEEK, VALID_YEAR
-from src.eth import pin_to_ipfs, mint_nft
+from src.eth import pin_to_ipfs, mint_nfts
 
 warnings.filterwarnings("ignore")
 
@@ -243,12 +243,12 @@ async def lootbox(ctx: Messageable):
         print(f"Data URI: {data_base_uri}")
 
         # Mint the NFTs
+        data_uris = []
         for data_file in metadata_files:
             data_basename = os.path.basename(data_file)
-            data_uri = data_base_uri + data_basename
+            data_uris.append(data_base_uri + data_basename)
 
-            print("Minting NFT: ", data_uri, " to address: ", user_addr)
-            mint_nft(user_addr, data_uri)
+        mint_nfts(user_addr, data_uris)
 
         # Send a message to the new owner with images of their new NFTs!
         await send_success_msg(ctx)

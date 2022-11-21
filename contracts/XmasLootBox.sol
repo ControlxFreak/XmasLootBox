@@ -1,5 +1,3 @@
-//Contract based on [https://docs.openzeppelin.com/contracts/3.x/erc721](https://docs.openzeppelin.com/contracts/3.x/erc721)
-
 // SPDX-License-Identifier: MIT
 
 pragma solidity ^0.8.0;
@@ -9,7 +7,7 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 
-contract XmasLootBox is ERC721URIStorage, Ownable {
+contract TestToken is ERC721URIStorage, Ownable {
 
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
@@ -18,7 +16,6 @@ contract XmasLootBox is ERC721URIStorage, Ownable {
 
     function mintNFT(address recipient, string memory tokenURI)
         public onlyOwner
-        returns (uint256)
     {
 
         _tokenIds.increment();
@@ -27,11 +24,17 @@ contract XmasLootBox is ERC721URIStorage, Ownable {
         _mint(recipient, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
-        return newItemId;
+    }
+
+    function mint4NFTs(address recipient, string[4] memory tokenURIs)
+        public onlyOwner
+    {
+        for(uint i=0; i<4; i++){
+            mintNFT(recipient, tokenURIs[i]);
+        }
     }
 
     function totalSupply() external view returns (uint256){
         return _tokenIds.current();
     }
-
 }
