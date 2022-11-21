@@ -3,6 +3,10 @@
 .swp
 nfts/
 
+addresses.json
+next_id
+users.json
+
 node_modules/
 package*.json
 

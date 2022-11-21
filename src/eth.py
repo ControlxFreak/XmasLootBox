@@ -19,6 +19,9 @@ OWNER_PRIVATE_KEY = os.getenv("OWNER_PRIVATE_KEY")
 ALCHEMY_URL = f"https://eth-goerli.g.alchemy.com/v2/{ALCHEMY_TOKEN}"
 w3 = Web3(Web3.HTTPProvider(ALCHEMY_URL))
 
+# Create the account object
+account = w3.eth.account.from_key(OWNER_PRIVATE_KEY)
+
 # Load the ABI once into memory
 with open("contracts/XmasLootBox_abi.json", "r") as f:
     CONTRACT_ABI=json.load(f)
@@ -60,15 +63,19 @@ def pin_to_ipfs(filenames: List[str]) -> str:
     return response.json()["IpfsHash"]
 
 
-# def mint_nfts():
+def mint_nft(addr: str, ipfs_cid: str):
+    """Mint the NFT located at `ipfs_cid` to address `addr`"""
 
-    # # Construct the transaction
-    # nonce = w3.eth.getTransactionCount(OWNER_ADDRESS)
+    # Get the the current nonce of the owner
+    nonce = w3.eth.get_transaction_count(OWNER_ADDRESS)
 
-    # tx = {
-    #     'nonce': nonce,
-    #     'to': account_2,
-    #     'value': web3.toWei(1, 'ether'),
-    #     'gas': 2000000,
-    #     'gasPrice': web3.toWei('50', 'gwei'),
-    # }
+    # Build the transaction
+    txn = contract.functions.mintNFT(addr, ipfs_cid).build_transaction({
+        'from': account.address,
+        'nonce': nonce,
+    })
+
+    # Sign and send the transaction
+    signed_txn = w3.eth.account.sign_transaction(txn, account.key)
+    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+    w3.eth.waitForTransactionReceipt(txn_hash)

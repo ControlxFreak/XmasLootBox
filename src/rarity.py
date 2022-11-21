@@ -210,41 +210,34 @@ def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
     return ["realistic", "toon", "meme", "NFT", "pixel"]
 
-def get_pets() -> List[str]:
-    """Return the list of pet names."""
-    return [
-        "butters",
-        "jinx",
-        "starfire",
-        "patrick",
-        "phillip",
-        "winston",
-        "allan",
-        "nalla"
-    ]
-
-def sample_rarity_label(week_num : int) -> str:
+def sample_rarity_label(week_num : int, sim_flag: bool) -> str:
     """Sample a rarity label based on the PMF for this week!
 
     The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
+    If the sim flag is set, just sample the rarity label uniformly.
     """
-    # Grab the labels and IDs
-    rarity_labels = get_rarity_labels()
-    num_labels = len(rarity_labels)
-    ids = np.arange(1, num_labels + 1)
 
-    # Get the Poisson mean for this week
-    mus = [1, 2, 6, 12, 16]
-    mu = mus[week_num]
+    if sim_flag:
+        return sample_rarity_label_uniform()
+    else:
+        # Grab the labels and IDs
+        rarity_labels = get_rarity_labels()
+        num_labels = len(rarity_labels)
+        ids = np.arange(1, num_labels + 1)
 
-    # Compute the PMF over this support and normalize to ensure its still a distribution
-    pmf = poisson.pmf(ids, mu=mu)
-    pmf /= np.sum(pmf)
+        # Get the Poisson mean for this week
+        mus = [1, 2, 6, 12, 16]
+        mu = mus[week_num]
 
-    # Sample from a categorical distribution
-    samples = np.random.multinomial(n=1, pvals=pmf)
-    rarity_level = np.flatnonzero(samples)[0]
-    return rarity_level_to_label(rarity_level)
+        # Compute the PMF over this support and normalize to ensure its still a distribution
+        pmf = poisson.pmf(ids, mu=mu)
+        pmf /= np.sum(pmf)
+
+        # Sample from a categorical distribution
+        samples = np.random.multinomial(n=1, pvals=pmf)
+        rarity_level = np.flatnonzero(samples)[0]
+        return rarity_level_to_label(rarity_level)
+        
 
 def sample_rarity_label_uniform() -> str:
     """Sample a rarity label according to a uniform distribution.

@@ -30,4 +30,8 @@ contract XmasLootBox is ERC721URIStorage, Ownable {
         return newItemId;
     }
 
+    function totalSupply() external view returns (uint256){
+        return _tokenIds.current();
+    }
+
 }

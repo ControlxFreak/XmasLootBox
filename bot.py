@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 import warnings
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Any
 
 import json
 from threading import Lock
@@ -16,9 +16,9 @@ from PIL.Image import Image as ImgType
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata
 from src.artists import add_frame
-from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_error_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg
+from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_error_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account
 from src.constants import START_WEEK, END_WEEK, VALID_YEAR
-from src.eth import pin_to_ipfs#, mint_nfts
+from src.eth import pin_to_ipfs, mint_nft
 
 warnings.filterwarnings("ignore")
 
@@ -45,45 +45,46 @@ intents.message_content = True
 bot = commands.Bot(intents=intents, command_prefix=">")
 
 # Initialize the mutex locks
-participants_mutex = Lock()
+users_mutex = Lock()
 next_nft_mutex = Lock()
-addresses_mutex = Lock()
 
 # ============================================ #
 # Utilities
 # ============================================ #
-async def participant_check(ctx: Messageable, username: str, day_hash: int):
-    """Verify that this participant:
+async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str, Any]:
+    """Verify that this user:
     1. Has an account
     2. Has not tried to claim today
     """
-    participants_mutex.acquire()
+    users_mutex.acquire()
 
-    # Open the participants json
-    with open("participants.json", 'r') as f:
-        participants = json.load(f)
+    # Open the users json
+    with open("users.json", 'r') as f:
+        users = json.load(f)
 
     # Check if this username has registered to play and has setup an Ethereum wallet
-    if username.lower() not in participants.keys():
+    if username.lower() not in users.keys():
         await send_no_wallet_msg(ctx)
-        participants_mutex.release()
+        users_mutex.release()
         raise RuntimeError("No Wallet.")
 
     # Check to see if this user has claimed a loot box today
-    if (day_hash in participants[username] and not SIM_FLAG):
+    if (day_hash in users[username] and not SIM_FLAG):
         await send_impish_msg(ctx)
-        participants_mutex.release()
+        users_mutex.release()
         raise RuntimeError("Multi-claim.")
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today
-    participants[username].append(day_hash)
+    users[username]["claimed"].append(day_hash)
 
-    with open("participants.json", 'w') as f:
-        json.dump(participants, f)
+    with open("users.json", 'w') as f:
+        json.dump(users, f)
 
     # Release the mutex and return
-    participants_mutex.release()
+    users_mutex.release()
+
+    return users
 
 
 def save_nfts(nft_imgs: List[ImgType]) -> Tuple[int, List[str]]:
@@ -121,11 +122,11 @@ def save_nfts(nft_imgs: List[ImgType]) -> Tuple[int, List[str]]:
 
     return first_nft_id, nft_files
 
-def save_metadata(metadata: Dict[str, str], description: str, first_nft_id: int, nft_files: List[str], nft_base_uri: str) -> List[str]:
+
+def save_metadata(metadata: Dict[str, str], first_nft_id: int, nft_files: List[str], nft_base_uri: str) -> List[str]:
     """Saves the NFT metadata to disk.
     NOTE: This assumes that all NFT images are saved to the same directory.
     """
-
     # Generate a unique path to this NFT directory
     unq_nft_data_dir = os.path.join(NFT_DIR, f"{first_nft_id}-data")
     os.makedirs(unq_nft_data_dir, exist_ok=True)
@@ -143,7 +144,7 @@ def save_metadata(metadata: Dict[str, str], description: str, first_nft_id: int,
         metadata_cpy["name"] = metadata_cpy["name"].format(nft_id)
 
         # Add the image URI
-        metadata_cpy["image"] = nft_base_uri + "\\" + nft_base
+        metadata_cpy["image"] = nft_base_uri + nft_base
 
         # Save the file
         data_file = os.path.join(unq_nft_data_dir, f"{nft_id}.json")
@@ -178,9 +179,10 @@ async def lootbox(ctx: Messageable):
             await send_eoe_msg(ctx)
             raise RuntimeError("End of Event.")
 
-        # Check that the participant has an account setup
+        # Check that the user has an account setup
         username = (ctx.message.author.name).lower()
-        await participant_check(ctx, username, day_hash)
+        users = await user_check(ctx, username, day_hash)
+        user_addr = users[username]["address"]
 
         # If they pass, they can play!
         # Send the admirable message
@@ -190,10 +192,7 @@ async def lootbox(ctx: Messageable):
         # Sampling
         # ============================================ #
         # Sample the rarity level
-        # TODO: vv Use the real week number when it becomes time vv
-        # rarity_level = sample_rarity_label(week_num, SIM_FLAG)
-        rarity_level = sample_rarity_label_uniform()
-        # TODO: ^^ Use the real week number when it becomes time ^^
+        rarity_level = sample_rarity_label(week_num, SIM_FLAG)
 
         # Sample the metadata
         attributes = sample_attributes(rarity_level)
@@ -240,10 +239,16 @@ async def lootbox(ctx: Messageable):
 
         # Pin the metadata to IPFS
         data_cid = pin_to_ipfs(metadata_files)
-        data_base_uri = f"ipfs://{nft_cid}/"
+        data_base_uri = f"ipfs://{data_cid}/"
         print(f"Data URI: {data_base_uri}")
 
         # Mint the NFTs
+        for data_file in metadata_files:
+            data_basename = os.path.basename(data_file)
+            data_uri = data_base_uri + data_basename
+
+            print("Minting NFT: ", data_uri, " to address: ", user_addr)
+            mint_nft(user_addr, data_uri)
 
         # Send a message to the new owner with images of their new NFTs!
         await send_success_msg(ctx)
@@ -251,54 +256,45 @@ async def lootbox(ctx: Messageable):
     finally:
         # Release the mutex, wether we hit an exception or not
         # NOTE: I know that this could cause an edge-case where this releases a lock that another thread is using...
-        # However, I'm willing to take that risk since it is such an edge-case.
-        # The one most at risk is the addresses_mutex, but honestly the odds of a conflict is extremely low, especially after the first day.
-        if participants_mutex.locked():
-            participants_mutex.release()
+        # However, I'm willing to take that risk since it is such an unlikely occurance.
+        if users_mutex.locked():
+            users_mutex.release()
 
         if next_nft_mutex.locked():
             next_nft_mutex.release()
 
-        if addresses_mutex.locked():
-            addresses_mutex.release()
-
-
 @bot.command()
-async def create(ctx: Messageable, participant: str, participant_addr: str):
+async def create(ctx: Messageable, username: str, user_addr: str):
     # Make sure that the only user that is allowed to call this is me
-    username = (ctx.message.author.name).lower()
+    caller = (ctx.message.author.name).lower()
 
-    if username.lower() != "aoth":
-        send_not_aoth_msg(ctx)
+    if caller.lower() != "aoth":
+        await send_not_aoth_msg(ctx)
         return
 
-    # Add the participant to the participants file
-    participants_mutex.acquire()
+    # Add the user to the users file
+    users_mutex.acquire()
 
-    with open("participants.json", 'r') as f:
-        participants = json.load(f)
+    with open("users.json", 'r') as f:
+        users = json.load(f)
 
-    participants[participant] = []
+    if username.lower() in users:
+        await send_user_has_account(ctx, username, users[username]["address"])
+        users_mutex.release()
+        return
 
-    with open("participants.json", 'w') as f:
-        json.dump(participants, f)
+    users[username] = {
+        "address": user_addr,
+        "claimed": []
+    }
+
+    with open("users.json", 'w') as f:
+        json.dump(users, f)
 
     # Release the mutex and return
-    participants_mutex.release()
+    users_mutex.release()
 
-    # Add the ethereum address
-    addresses_mutex.acquire()
-    with open("addresses.json", 'r') as f:
-        addresses = json.load(f)
-
-    addresses[participant] = participant_addr
-
-    with open("addresses.json", 'w') as f:
-        json.dump(addresses, f)
-
-    addresses_mutex.release()
-
-    await send_created_msg(ctx, participant)
+    await send_created_msg(ctx, username, users[username]["address"])
 
 
 @bot.command()
@@ -307,19 +303,19 @@ async def address(ctx: Messageable):
     username = (ctx.message.author.name).lower()
 
     # Get their address
-    addresses_mutex.acquire()
-    with open("addresses.json", 'r') as f:
-        addresses = json.load(f)
-    addresses_mutex.release()
+    users_mutex.acquire()
+    with open("users.json", 'r') as f:
+        users = json.load(f)
+    users_mutex.release()
 
-    if username not in addresses:
+    if username not in users:
         await send_no_wallet_msg(ctx)
         return
 
-    participant_addr = addresses[username]
+    user_addr = users[username]["address"]
 
     # Send them a message
-    await send_addr_msg(ctx, participant_addr)
+    await send_addr_msg(ctx, user_addr)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)

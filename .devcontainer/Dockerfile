@@ -4,23 +4,7 @@
 ARG VARIANT="3.10-bullseye"
 FROM mcr.microsoft.com/vscode/devcontainers/python:0-${VARIANT}
 
-# Node.js version: none, lts/*, 16, 14, 12, 10
-ARG NODE_VERSION="none"
-RUN if [ "${NODE_VERSION}" != "none" ]; then su vscode -c "umask 0002 && . /usr/local/share/nvm/nvm.sh && nvm install ${NODE_VERSION} 2>&1"; fi
-
 # If your pip requirements rarely change, uncomment this section to add them to the image.
 COPY requirements.txt /tmp/pip-tmp/
 RUN pip3 --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt \
    && rm -rf /tmp/pip-tmp
-
-# Install web3
-# RUN npm install web3
-# # Install the web3.storage package
-# RUN npm install web3.storage
-# RUN npm install -g @web3-storage/w3
-# # Install ethers.js
-# RUN npm install --save ethers
-# # Install the dotenv package
-# RUN npm install dotenv --save
-# # Install url-join
-# RUN npm install url-join

@@ -69,7 +69,7 @@ async def send_admirable_msg(ctx):
             ```diff\n+It Seems You Have Been Quite Admirable This Year!```\n\
             **Please stand-by while my elves generate your daily gifts!**\n\
             **I hope its value goes to the moon!**🪙🚀\n\n\
-            This might take a moment, but I will let you know when your gift is ready!\n\n\
+            This might take a few minutes depending on network traffic, but I will let you know when your gift is ready!\n\n\
             ```css\n[{generate_christmas_countdown_msg()}]\n```",
         color=0x00ff00
     )
@@ -137,12 +137,12 @@ async def send_not_aoth_msg(ctx):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=stop_file)
 
-async def send_created_msg(ctx, participant):
+async def send_created_msg(ctx, username, addr):
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Created an account for {participant}!",
+        title=f"Created an account for {username}!\nYour Ethereum address is:\n{addr}",
         description=f"\
-        You should be good to collect a lootbox right away, @{participant}!\n\
+        You should be good to collect a lootbox right away, @{username}!\n\
         Use the `>help` command to get started.",
         color=0x00ff00
     )
@@ -156,6 +156,20 @@ async def send_addr_msg(ctx, addr):
     # Configure the message
     embedVar = discord.Embed(
         title=f"{ctx.message.author.name}, your Ethereum address is:\n{addr}",
+        description=f"\
+        If you are interested in understanding more about Ethereum addresses, ask @aoth!",
+        color=0x00ff00
+    )
+    eth_file = discord.File("assets/eth.jpg", filename="eth.jpg")
+    embedVar.set_image(url="attachment://eth.jpg")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=eth_file)
+
+async def send_user_has_account(ctx, username, addr):
+    """Send the notification that this user already has an account."""
+    # Configure the message
+    embedVar = discord.Embed(
+        title=f"{username} already has an account!\nYour Ethereum address is:\n{addr}",
         description=f"\
         If you are interested in understanding more about Ethereum addresses, ask @aoth!",
         color=0x00ff00
