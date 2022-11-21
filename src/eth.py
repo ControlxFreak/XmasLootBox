@@ -73,8 +73,8 @@ def mint_nfts(addr: str, ipfs_cids: List[str]):
     txn = contract.functions.mint4NFTs(addr, ipfs_cids).build_transaction({
         'from': account.address,
         'nonce': nonce,
-        'maxPriorityFeePerGas': w3.toWei(100, 'gwei'),
-        'maxFeePerGas': w3.toWei(125, 'gwei')
+        'maxPriorityFeePerGas': w3.toWei(10, 'gwei'),   # See issue #20 for math
+        'maxFeePerGas': w3.toWei(200, 'gwei'),          # See issue #20 for math
     })
 
     # Sign and send the transaction
