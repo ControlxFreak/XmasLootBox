@@ -54,16 +54,8 @@ Total Frames: 14
 | vv Only Christmas Miracle vv | 
 | Reindeer      |
 | Santa Claus   |
-| Butters       |
-| Jinx          |
-| Starfire      |
-| Patrick       |
-| Phillip       |
-| Winston       |
-| Alan          |
-| Nala          |
 
-Total Subjects: 19
+Total Subjects: 11
 
 ## Age
 
@@ -117,28 +109,6 @@ Total Hats: 6
 
 Total Eyes: 13
 
-## Beards
-
-| Beards         |
-| -----------    | 
-| None           |
-| White          |
-| Black          |
-| Blue           |
-| Brown          |
-| Green          |
-| vv Only Mythic + vv |
-| Purple         |
-| Neon           |
-| RGB            |
-| vv Only N-F-Tacular + vv |
-| Rainbow        |
-| Fire           |
-| vv Only Christmas Miracle vv |
-| Pepermint      |
-
-Total Beards: 12
-
 ## Scarfs
 
 | Scarf          |
@@ -159,7 +129,7 @@ Total Beards: 12
 | vv Only Christmas Miracle vv |
 | Pepermint      |
 
-Total Beards: 13
+Total Scarfs: 13
 
 ## Backgrounds
 

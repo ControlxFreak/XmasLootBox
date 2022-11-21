@@ -42,22 +42,10 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
 
     # ======================================== #
     # Add the personal features
-    s += " with "
-
-    has_beard = False
-    if attributes["beard"] is not None:
-        has_beard = True
-        s += "a "
-        s += attributes["beard"]
-        s += " beard "
-
     has_eyes = False
     if attributes["eyes"] != "sunglasses":
         has_eyes = True
-        # Add a conjunction if we also have a beard
-        if has_beard:
-            s += "and "
-
+        s += " with "
         s += attributes["eyes"]
         s += " eyes "
 

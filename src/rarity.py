@@ -127,38 +127,6 @@ def get_eyes(rarity_level: int) -> List[str]:
     # Must be Christmas Miracle
     return eyes
 
-def get_beards(rarity_level: int) -> List[Optional[str]]:
-    """Get the list of beards available to be sampled at a given rarity level."""
-    beards = [
-        None,
-        "white",
-        "black",
-        "blue",
-        "brown",
-        "green",
-        "purple",
-        "neon",
-        "rgb",
-        "rainbow",
-        "fire",
-        "pepermint"
-    ]
-
-    if rarity_level < 4:
-        # Must be < Mythical
-        return beards[:5]
-    
-    if rarity_level < 5:
-        # Must be < N-F-Tacular
-        return beards[:8]
-
-    if rarity_level < 6:
-        # Must be < Christmas Miracle
-        return beards[:-1]
-
-    # Must be Christmas Miracle
-    return beards
-
 def get_scarfs(rarity_level: int) -> List[Optional[str]]:
     """Get the list of scarfs available to be sampled at a given rarity level."""
     scarfs = [
@@ -267,11 +235,6 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
     subjects = get_subjects(rarity_level)
     subject = random.choice(subjects)
     attributes["subject"] = subject
-
-    # Sample the beard
-    beards = get_beards(rarity_level)
-    beard = random.choice(beards)
-    attributes["beard"] = beard
 
     # Sample the eyes
     eyes = get_eyes(rarity_level)
