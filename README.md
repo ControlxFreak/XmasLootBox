@@ -4,10 +4,10 @@ Merry Christmas!
 Welcome to the 2022 Discord Christmas NFT Loot Box Advent Calendar!
 
 Every day in the month of December, users will be able to interact with the Discord bot to claim a special gift, a completely unique (and real) NFT that will be minted to the Ethereum Goerli testnet and be placed in your very own Ethereum wallet!
-Every gift's artwork will be procedurally generated and created by an AI program ([Dalle-2](https://openai.com/dall-e-2/)) that translates natural language text into images.
-Each NFT will be randomly generated with different atributes and rarity levels.
-Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds!
-With over 1,249,248 possiblities, there is sure to be something for everyone!
+Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images.
+Each NFT will be randomly generated with different attributes and rarity levels.
+Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds.
+With over 1,249,248 possibilities, there is sure to be something for everyone!
 
 There are 7 Rarity Levels (listed in order of increasing rarity):
 
