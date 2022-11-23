@@ -102,11 +102,11 @@ async def send_success_msg(ctx, addr, first_nft_id, preview, img_cid, nft_cid):
     embedVar = discord.Embed(
         title=f"Your Gift is available, {ctx.message.author.name}!",
         description=f"\
-        Here is a small preview!\n\
-        You can check out your updated collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)!\n\
-        Or download the [raw images](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{img_cid}) or [NFTs](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{nft_cid})\n\
-        **The ID's are: {first_nft_id}, {first_nft_id+1}, {first_nft_id+2}, and {first_nft_id+3}.**\n\
-        (It might take ~1 minute to register on OpenSea)",
+        You can check out your updated collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false),\n\
+        or download the [raw images](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{img_cid}) and [NFTs](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{nft_cid})\n\
+        **Your NFT ID's are: {first_nft_id}, {first_nft_id+1}, {first_nft_id+2}, and {first_nft_id+3}.**\n\
+        (It might take ~1 minute to register on OpenSea)\n\
+        Here is a small preview:",
         color=0x00ff00
     )
     prev_file = discord.File(preview, filename=preview)

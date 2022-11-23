@@ -1,8 +1,10 @@
-from typing import List
+from typing import List, Coroutine, Callable
 from requests import Session, Request, Response
 import dotenv
 import os
 import json
+import functools
+import asyncio
 
 from web3 import Web3
 
@@ -36,7 +38,14 @@ with open("contracts/XmasLootBox_abi.json", "r") as f:
 # Instantiate the contract class
 contract = w3.eth.contract(address=w3.toChecksumAddress(CONTRACT_ADDRESS), abi=CONTRACT_ABI)
 
+def to_thread(func: Callable) -> Coroutine:
+    """Helper to make these blocking functions cast to threads since they are really slow and cause Discord to freak out."""
+    @functools.wraps(func)
+    async def wrapper(*args, **kwargs):
+        return await asyncio.to_thread(func, *args, **kwargs)
+    return wrapper
 
+@to_thread
 def pin_to_ipfs(filenames: List[str]) -> str:
     """Pins all contents of a directory to IPFS and returns the CID hash.
     NOTE: All files must be in the same directory for this to work.
@@ -63,6 +72,7 @@ def pin_to_ipfs(filenames: List[str]) -> str:
     return response.json()["IpfsHash"]
 
 
+@to_thread
 def mint_nfts(addr: str, ipfs_cids: List[str]):
     """Mint the NFT located at `ipfs_cid` to address `addr`"""
 

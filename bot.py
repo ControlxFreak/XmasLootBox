@@ -46,7 +46,7 @@ dalle = Dalle2(OPENAI_TOKEN)
 # Initialize the discord bot
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents, command_prefix="!", heartbeat_timeout=1000000000)
+bot = commands.Bot(intents=intents, command_prefix="!", heartbeat_timeout=1000000000, case_insensitive=True)
 
 # Initialize the mutex locks
 users_mutex = Lock()
@@ -124,7 +124,7 @@ def make_uniq_dirs() -> Tuple[int, str, str, str]:
 
     return first_nft_id, unq_img_dir, unq_nft_dir, unq_dat_dir, unq_prv_dir
 
-def _save_nft_thread(nft_img: List[ImgType], filename: str):
+def save_nft(nft_img: List[ImgType], filename: str):
     """This is very slow so we will execute this in a seperate thread."""
     nft_img[0].save(filename,
             save_all = True, append_images = nft_img[1:],
@@ -135,7 +135,6 @@ def save_metadata(metadata: Dict[str, str], unq_dat_dir: str, nft_files: List[st
     """Saves the NFT metadata to disk.
     NOTE: This requires that all NFT images are saved to the same directory.
     """
-
     data_files = []
     for fullfile in nft_files:
         # Make a copy of the metadata dictionary
@@ -251,7 +250,7 @@ async def claim(ctx: Messageable):
     nft_imgs = [res for res in executor.map(add_frame, images, num_imgs*[frame_path])]
 
     print(f"Saving the NFTs ({first_nft_id})...")
-    _ = [res for res in executor.map(_save_nft_thread, nft_imgs, nft_files)]
+    _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
 
     # ============================================ #
     # Metadata Generation
@@ -263,11 +262,11 @@ async def claim(ctx: Messageable):
     # Web3
     # ============================================ #
     # Pin the images to IPFS
-    img_cid = pin_to_ipfs(img_files)
+    img_cid = await pin_to_ipfs(img_files)
     print(f"IMG URI: {img_cid}")
 
     # Pin the nfts to IPFS
-    nft_cid = pin_to_ipfs(nft_files)
+    nft_cid = await pin_to_ipfs(nft_files)
     nft_base_uri = f"ipfs://{nft_cid}/"
     print(f"NFT URI: {nft_base_uri}")
 
@@ -275,7 +274,7 @@ async def claim(ctx: Messageable):
     metadata_files = save_metadata(metadata, unq_dat_dir, nft_files, nft_base_uri)
 
     # Pin the metadata to IPFS
-    data_cid = pin_to_ipfs(metadata_files)
+    data_cid = await pin_to_ipfs(metadata_files)
     data_base_uri = f"ipfs://{data_cid}/"
     print(f"Data URI: {data_base_uri}")
 
@@ -286,7 +285,7 @@ async def claim(ctx: Messageable):
         data_uris.append(data_base_uri + data_basename)
 
     print("Minting NFTs...")
-    # mint_nfts(user_addr, data_uris)
+    # await mint_nfts(user_addr, data_uris)
 
     # Create the preview image
     print("Creating Preview...")
