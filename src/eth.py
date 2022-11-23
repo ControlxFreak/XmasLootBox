@@ -1,5 +1,5 @@
 from typing import List, Coroutine, Callable
-from requests import Session, Request, Response
+from requests import Session, Request, get
 import dotenv
 import os
 import json
@@ -71,6 +71,20 @@ def pin_to_ipfs(filenames: List[str]) -> str:
 
     return response.json()["IpfsHash"]
 
+@to_thread
+def get_from_ipfs(cid: str, filename: str) -> str:
+    """Download a file from IPFS."""
+    # Request the file
+    url = f"https://violet-legal-antelope-340.mypinata.cloud/ipfs/{cid}/{filename}"
+    response = get(url)
+
+    if not response.ok:
+        raise RuntimeError(f"Could not retrieve from IPFS.\n{response.text}")
+
+    # Save the file to /tmp
+    out_filename = f"/tmp/{filename}"
+    open(out_filename, "wb").write(response.content)
+    return out_filename
 
 @to_thread
 def mint_nfts(addr: str, ipfs_cids: List[str]):

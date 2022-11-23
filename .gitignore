@@ -6,6 +6,7 @@ nfts/
 addresses.json
 next_id
 users.json
+owners.json
 
 node_modules/
 package*.json

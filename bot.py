@@ -2,8 +2,7 @@ import os
 from copy import deepcopy
 import warnings
 from typing import List, Dict, Tuple, Any
-import asyncio
-
+import random
 import json
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
@@ -19,9 +18,9 @@ from PIL.Image import Image as ImgType
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata
 from src.artists import add_frame, create_nft_preview
-from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg
+from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg
 from src.constants import START_WEEK, END_WEEK, VALID_YEAR
-from src.eth import pin_to_ipfs, mint_nfts
+from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs
 
 warnings.filterwarnings("ignore")
 
@@ -50,6 +49,7 @@ bot = commands.Bot(intents=intents, command_prefix="!", heartbeat_timeout=100000
 
 # Initialize the mutex locks
 users_mutex = Lock()
+owners_mutex = Lock()
 next_nft_mutex = Lock()
 
 # Initialize a threadpool executor
@@ -163,7 +163,7 @@ def save_metadata(metadata: Dict[str, str], unq_dat_dir: str, nft_files: List[st
 # ============================================ #
 @bot.command()
 async def claim(ctx: Messageable):
-
+    """Claim your daily gift!"""
     # ============================================ #
     # Verification
     # ============================================ #
@@ -278,11 +278,25 @@ async def claim(ctx: Messageable):
     data_base_uri = f"ipfs://{data_cid}/"
     print(f"Data URI: {data_base_uri}")
 
-    # Mint the NFTs
+    # Get the data uris
     data_uris = []
     for data_file in metadata_files:
         data_basename = os.path.basename(data_file)
         data_uris.append(data_base_uri + data_basename)
+
+    # Update the owner's list
+    print("Updating the owners list...")
+    owners_mutex.acquire()
+    with open("owners.json", 'r') as f:
+        owners = json.load(f)
+
+    owners[username].append(
+        {"img": img_cid, "nft": nft_cid, "data": data_cid, "ids": [first_nft_id + i for i in range(4)]}
+    )
+
+    with open("owners.json", 'w') as f:
+        json.dump(owners, f)
+    owners_mutex.release()
 
     print("Minting NFTs...")
     # await mint_nfts(user_addr, data_uris)
@@ -300,7 +314,8 @@ async def claim(ctx: Messageable):
     await send_success_msg(ctx, user_addr, first_nft_id, preview_filename, img_cid, nft_cid)
 
 @bot.command()
-async def create(ctx: Messageable, username: str, user_addr: str):
+async def add(ctx: Messageable, username: str, user_addr: str):
+    """Add a new user to the bot. This can only be run by @aoth."""
     # Make sure that the only user that is allowed to call this is me
     caller = (ctx.message.author.name).lower()
 
@@ -330,10 +345,24 @@ async def create(ctx: Messageable, username: str, user_addr: str):
     # Release the mutex and return
     users_mutex.release()
 
+    # Add the user to the owner's file
+    owners_mutex.acquire()
+
+    with open("owners.json", "r") as f:
+        owners = json.load(f)
+    
+    owners[username] = []
+
+    with open("owners.json", "w") as f:
+        json.dump(f, owners)
+    
+    owners_mutex.release()
+
     await send_created_msg(ctx, username, users[username]["address"])
 
 @bot.command()
 async def address(ctx: Messageable):
+    """Display your Ethereum address."""
     # Get the caller's name
     username = (ctx.message.author.name).lower()
 
@@ -352,8 +381,9 @@ async def address(ctx: Messageable):
     # Send them a message
     await send_addr_msg(ctx, user_addr)
 
-@bot.command()
-async def users(ctx: Messageable):
+@bot.command(name="users")
+async def _users(ctx: Messageable):
+    """Display the list of users and their Ethereum addresses."""
     # Get the users
     users_mutex.acquire()
     with open("users.json", 'r') as f:
@@ -362,6 +392,46 @@ async def users(ctx: Messageable):
 
     # Send them a message
     await send_users_msg(ctx, users)
+
+@bot.command()
+async def nft(ctx: Messageable):
+    """Display one of your NFTs (chosen randomly)."""
+    username = (ctx.message.author.name).lower()
+
+    # Load the owners
+    owners_mutex.acquire()
+    with open("owners.json", 'r') as f:
+        owners = json.load(f)
+    owners_mutex.release()
+
+    # Load the address
+    users_mutex.acquire()
+    with open("users.json", 'r') as f:
+        users = json.load(f)
+    users_mutex.release()
+
+    # Check to see that this user exists
+    if username not in owners or username not in users:
+        await send_no_wallet_msg(ctx)
+        return
+
+    # Get all of the CIDs that this owner has
+    cids = owners[username]
+
+    if len(cids) == 0:
+        await send_no_nfts_msg(ctx)
+        return
+
+    # Randomlly select one
+    cid = random.choice(cids)
+    nft_id = random.choice(cid["ids"])
+    nft_filename = f"{nft_id}.gif"
+
+    # Download it and save it to /tmp
+    nft_img = await get_from_ipfs(cid["nft"], nft_filename)
+
+    # Send it
+    await send_nft_msg(ctx, nft_img, nft_id, users[username]["address"])
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
