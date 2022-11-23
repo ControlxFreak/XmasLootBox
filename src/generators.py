@@ -1,9 +1,12 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
+import os
 from PIL import Image
 from PIL.Image import Image as ImgType
 from dalle2 import Dalle2
 
-def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> List[ImgType]:
+from .constants import *
+
+def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> Tuple[List[ImgType], List[str]]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
 
     DO NOT CALL WITH `sim=True` UNTIL YOU ARE READY!! IT WILL COST MONEY!!!
@@ -15,6 +18,21 @@ def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> List[I
         images.append(Image.open(img_file))
 
     # Return the list of images
+    return images, img_files
+
+def generate_example_art(unq_img_dir: str, first_nft_id: int) -> Tuple[List[ImgType], List[str]]:
+    """Just generate some example artwork for testing."""
+    # Load the example images
+    images = [
+        Image.open(os.path.join(ASSET_DIR, f"example/{i}.png")) for i in range(1,5)
+    ]
+    # Copy them into the correct location so they can be uploaded
+    img_files = [
+        os.path.join(unq_img_dir, f"{first_nft_id + idx}.png")
+        for idx in range(4)
+    ]
+    _ = [img.save(img_file) for img, img_file in zip(images, img_files)]
+
     return images, img_files
 
 def generate_dalle_description(attributes: Dict[str, str])->str:

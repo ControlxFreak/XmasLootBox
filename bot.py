@@ -16,28 +16,22 @@ from PIL import Image
 from PIL.Image import Image as ImgType
 
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
-from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata
+from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata, generate_example_art
 from src.artists import add_frame, create_nft_preview
 from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg
-from src.constants import START_WEEK, END_WEEK, VALID_YEAR
+from src.constants import *
 from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs
 
 warnings.filterwarnings("ignore")
 
 # ============================================ #
-# Initialize the enviornment variables
+# Initialize the environment variables
 # ============================================ #
 load_dotenv()
 DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
 OPENAI_TOKEN = os.getenv("OPENAI_TOKEN")
 CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
 SIM_FLAG = bool(int(os.getenv("SIM_FLAG")))
-
-# Define the input/output directories
-BASE_DIR = os.path.dirname(os.path.realpath(__file__))
-ASSET_DIR = os.path.join(BASE_DIR, "assets/")
-FRAME_DIR = os.path.join(BASE_DIR, ASSET_DIR, "frames/")
-OUT_DIR = os.path.join(BASE_DIR, "nfts/")
 
 # Initialize the dalle API
 dalle = Dalle2(OPENAI_TOKEN)
@@ -48,7 +42,7 @@ intents.message_content = True
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
-description = "\
+bot_description = "\
 Merry Christmas! Welcome to the 2022 Discord Christmas NFT Loot Box Advent Calendar!\n\n\
 Every day in the month of December, users will be able to interact with @SantaBot to claim a special gift: a completely unique (and real) NFT that will be minted to the Ethereum Goerli testnet and be placed in your very own Ethereum wallet! \
 Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images. \
@@ -58,7 +52,7 @@ With over 1,249,248 possibilities, there is sure to be something for everyone!\n
 To claim your first gift, use the command: !claim"
 bot = commands.Bot(
     command_prefix="!",
-    description = description,
+    description = bot_description,
     help_command=help_command,
     intents=intents,
     heartbeat_timeout=1000000000,
@@ -235,23 +229,15 @@ async def claim(ctx: Messageable):
     # Generate the artwork
     print("Generating the artwork...")
     if SIM_FLAG:
-        # Load the example images
-        images = [
-            Image.open(os.path.join(ASSET_DIR, f"example/{i}.png")) for i in range(1,5)
-        ]
-        # Copy them into the correct location so they can be uploaded
-        img_files = [
-            os.path.join(unq_img_dir, f"{first_nft_id + idx}.png")
-            for idx in range(4)
-        ]
-        _ = [img.save(img_file) for img, img_file in zip(images, img_files)]
+        # Generate some example art so we don't have to query Dalle
+        images, img_files = generate_example_art(unq_img_dir, first_nft_id)
     else:
         # Generate the art using Dalle
         images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
 
     # Sample the frame
-    frame_name = sample_frame(rarity_label)
-    frame_path = os.path.join(FRAME_DIR, f"{frame_name}.gif")
+    # frame_name = sample_frame(rarity_label)
+    frame_name = None
 
     # ============================================ #
     # NFT Generation
@@ -265,7 +251,7 @@ async def claim(ctx: Messageable):
     # Add the frame to each image and then save them
     # Spawn these in multiple threads since this can be done asynchronously and is slow
     print(f"Adding frames to the NFTs ({first_nft_id})...")
-    nft_imgs = [res for res in executor.map(add_frame, images, num_imgs*[frame_path])]
+    nft_imgs = [res for res in executor.map(add_frame, images, num_imgs*[frame_name])]
 
     print(f"Saving the NFTs ({first_nft_id})...")
     _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
@@ -321,7 +307,7 @@ async def claim(ctx: Messageable):
 
     # Create the preview image
     print("Creating Preview...")
-    preview = create_nft_preview(nft_imgs, frame_path)
+    preview = create_nft_preview(nft_imgs, frame_name)
     preview_filename = os.path.join(unq_prv_dir, "preview.gif")
     preview[0].save(preview_filename,
             save_all = True, append_images = preview[1:],
