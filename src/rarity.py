@@ -27,6 +27,19 @@ def rarity_level_to_label(rarity_level: int) -> str:
     rarity_labels = get_rarity_labels()
     return rarity_labels[rarity_level]
 
+def get_rarity_color(rarity_label: str) -> hex:
+    """Convert a rarity label string to its corresponding hex color."""
+    color_map = {
+        "common": 0x808080,     # Grey
+        "uncommon": 0x00873E,   # Green
+        "rare": 0x6777FF,       # Blue
+        "legendary": 0xA020F0,  # Purple
+        "mythical": 0xFFFF00,   # Yellow
+        "n-f-tacular": 0xFFA500,# Orange
+        "christmas miracle": 0xc54245, # Christmas Red
+    }
+    return color_map[rarity_label]
+
 def get_frame_names(rarity_label: str) -> Dict[str, List[Optional[str]]]:
     """Get a dictionary of frames keyed by the rarity label."""
     frame_map = {
@@ -178,34 +191,28 @@ def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
     return ["realistic", "toon", "meme", "NFT", "pixel"]
 
-def sample_rarity_label(week_num : int, sim_flag: bool) -> str:
+def sample_rarity_label(week_num : int) -> str:
     """Sample a rarity label based on the PMF for this week!
 
     The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
-    If the sim flag is set, just sample the rarity label uniformly.
     """
+    # Grab the labels and IDs
+    rarity_labels = get_rarity_labels()
+    num_labels = len(rarity_labels)
+    ids = np.arange(1, num_labels + 1)
 
-    if sim_flag:
-        return sample_rarity_label_uniform()
-    else:
-        # Grab the labels and IDs
-        rarity_labels = get_rarity_labels()
-        num_labels = len(rarity_labels)
-        ids = np.arange(1, num_labels + 1)
+    # Get the Poisson mean for this week
+    mus = [1, 2, 6, 12, 16]
+    mu = mus[week_num]
 
-        # Get the Poisson mean for this week
-        mus = [1, 2, 6, 12, 16]
-        mu = mus[week_num]
+    # Compute the PMF over this support and normalize to ensure its still a distribution
+    pmf = poisson.pmf(ids, mu=mu)
+    pmf /= np.sum(pmf)
 
-        # Compute the PMF over this support and normalize to ensure its still a distribution
-        pmf = poisson.pmf(ids, mu=mu)
-        pmf /= np.sum(pmf)
-
-        # Sample from a categorical distribution
-        samples = np.random.multinomial(n=1, pvals=pmf)
-        rarity_level = np.flatnonzero(samples)[0]
-        return rarity_level_to_label(rarity_level)
-        
+    # Sample from a categorical distribution
+    samples = np.random.multinomial(n=1, pvals=pmf)
+    rarity_level = np.flatnonzero(samples)[0]
+    return rarity_level_to_label(rarity_level)
 
 def sample_rarity_label_uniform() -> str:
     """Sample a rarity label according to a uniform distribution.

@@ -17,7 +17,7 @@ There are 7 NFT Rarity Levels.
 
 Every week, the probability mass function (PMF) describing the "rarity" or "drop rate" for NFTs characterized by each Rarity Level will be modified as described in the PMF histograms.
 
-![PMF Charts](./assets/rarity_histogram.png)
+![PMF Charts](./assets/docs/rarity_histogram.png)
 
 # Elements
 ## Frames

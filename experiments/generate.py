@@ -15,7 +15,7 @@ exit()
 
 load_dotenv()
 OPENAI_TOKEN = os.getenv("OPENAI_TOKEN")
-FRAME_DIR = "frames/"
+FRAME_DIR = "assets/frames/"
 OUT_DIR = "out/"
 
 # Define the number of NFTs that you want to generate

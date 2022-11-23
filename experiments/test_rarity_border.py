@@ -13,9 +13,9 @@ from PIL import Image
 frame_name = "rain_of_gold"
 # frame_name = "christmas_lights"
 
-frame_gif = Image.open(f"../frames/{frame_name}.gif")
+frame_gif = Image.open(f"../assets/frames/{frame_name}.gif")
 
-image = Image.open("../imgs/example/1.png")
+image = Image.open("../assets/example/1.png")
 width, height = image.size
 
 # Create a black background image

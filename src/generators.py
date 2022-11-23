@@ -3,28 +3,19 @@ from PIL import Image
 from PIL.Image import Image as ImgType
 from dalle2 import Dalle2
 
-def generate_dalle_art(dalle : Dalle2, description: str, sim_flag : bool = True) -> List[ImgType]:
+def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> List[ImgType]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
-
-    If sim is `True`, this will return the example images located in `assets/example/`.
-    If sim is `False`, this will call the dalle2 api and generate real images.
 
     DO NOT CALL WITH `sim=True` UNTIL YOU ARE READY!! IT WILL COST MONEY!!!
     """
-    if sim_flag:
-        # Load the example images
-        images = [
-            Image.open(f"assets/example/{i}.png") for i in range(1,5)
-        ]
-    else:
-        # Generate and download new Dalle2 images
-        generations = dalle.generate_and_download(description,image_dir="out/")
-        images = []
-        for gen in generations:
-            images.append(Image.open(gen))
+    # Generate and download new Dalle2 images
+    img_files = dalle.generate_and_download(description,image_dir=img_dir)
+    images = []
+    for img_file in img_files:
+        images.append(Image.open(img_file))
 
     # Return the list of images
-    return images
+    return images, img_files
 
 def generate_dalle_description(attributes: Dict[str, str])->str:
     """Generate the dalle description from the attributes."""

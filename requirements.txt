@@ -5,3 +5,4 @@ matplotlib
 numpy
 scipy
 web3
+table2ascii
