@@ -206,9 +206,9 @@ async def send_users_msg(ctx, users):
 async def send_no_nfts_msg(ctx):
     await ctx.channel.send("No NFTS")
 
-async def send_nft_msg(ctx, nft_img, nft_id, addr):
+async def send_nft_msg(ctx, username, nft_img, nft_id, addr):
     embedVar = discord.Embed(
-        title=f"{ctx.message.author.name} owns this (NFT \# {nft_id})!",
+        title=f"{username} owns this (NFT \# {nft_id})!",
         description=f"\
         Checkout their collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
         color=0x00ff00

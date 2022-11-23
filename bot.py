@@ -45,7 +45,25 @@ dalle = Dalle2(OPENAI_TOKEN)
 # Initialize the discord bot
 intents = discord.Intents.default()
 intents.message_content = True
-bot = commands.Bot(intents=intents, command_prefix="!", heartbeat_timeout=1000000000, case_insensitive=True)
+help_command = commands.DefaultHelpCommand(
+    no_category = 'Commands'
+)
+description = "\
+Merry Christmas! Welcome to the 2022 Discord Christmas NFT Loot Box Advent Calendar!\n\n\
+Every day in the month of December, users will be able to interact with @SantaBot to claim a special gift: a completely unique (and real) NFT that will be minted to the Ethereum Goerli testnet and be placed in your very own Ethereum wallet! \
+Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images. \
+Each NFT will be randomly generated with different attributes and rarity levels. \
+Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds. \
+With over 1,249,248 possibilities, there is sure to be something for everyone!\n\n\n\
+To claim your first gift, use the command: !claim"
+bot = commands.Bot(
+    command_prefix="!",
+    description = description,
+    help_command=help_command,
+    intents=intents,
+    heartbeat_timeout=1000000000,
+    case_insensitive=True,
+)
 
 # Initialize the mutex locks
 users_mutex = Lock()
@@ -383,7 +401,10 @@ async def address(ctx: Messageable):
 
 @bot.command(name="users")
 async def _users(ctx: Messageable):
-    """Display the list of users and their Ethereum addresses."""
+    """Display the list of users and their Ethereum addresses.
+    
+    NOTE: This renders poorly on mobile and I can't get the hyperlinks to work.
+    """
     # Get the users
     users_mutex.acquire()
     with open("users.json", 'r') as f:
@@ -431,7 +452,41 @@ async def nft(ctx: Messageable):
     nft_img = await get_from_ipfs(cid["nft"], nft_filename)
 
     # Send it
-    await send_nft_msg(ctx, nft_img, nft_id, users[username]["address"])
+    await send_nft_msg(ctx, username, nft_img, nft_id, users[username]["address"])
+
+@bot.command(name="random")
+async def _random(ctx: Messageable):
+    """Display someone's NFT chosen completely at random."""
+    # Load the owners
+    owners_mutex.acquire()
+    with open("owners.json", 'r') as f:
+        owners = json.load(f)
+    owners_mutex.release()
+
+    # Load the address
+    users_mutex.acquire()
+    with open("users.json", 'r') as f:
+        users = json.load(f)
+    users_mutex.release()
+
+    # Randomly select a user
+    print(list(users.keys()))
+    username = random.choice(list(users.keys()))
+    print(username)
+
+    # Randomly select an nft
+    cid = random.choice(owners[username])
+    nft_id = random.choice(cid["ids"])
+    nft_filename = f"{nft_id}.gif"
+
+    print(cid)
+    print(nft_id)
+
+    # Download it and save it to /tmp
+    nft_img = await get_from_ipfs(cid["nft"], nft_filename)
+
+    # Send it
+    await send_nft_msg(ctx, username, nft_img, nft_id, users[username]["address"])
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
