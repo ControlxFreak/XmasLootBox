@@ -19,9 +19,9 @@ from PIL.Image import Image as ImgType
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata, generate_example_art
 from src.artists import add_frame, create_nft_preview
-from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg, send_nobody_nfts_msg
+from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg, send_nobody_nfts_msg, send_balance_msg
 from src.constants import *
-from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct
+from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct, get_balance
 
 warnings.filterwarnings("ignore")
 
@@ -464,7 +464,7 @@ async def _users(ctx: Messageable):
     
     NOTE: This renders poorly on mobile and I can't get the hyperlinks to work.
     """
-    # Get the users
+    # Get the accounts
     accounts_mutex.acquire()
     with open("accounts.json", 'r') as f:
         accounts = json.load(f)
@@ -552,6 +552,51 @@ async def _random(ctx: Messageable):
 
     # We never found anyone
     await send_nobody_nfts_msg(ctx)
+
+@bot.command()
+async def balance(ctx: Messageable):
+    """Display your current ethereum and NFTs balance."""
+    username = (ctx.message.author.name).lower()
+
+    # Get the accounts
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    if username not in accounts:
+        await send_no_wallet_msg(ctx)
+        return
+
+    user_addr = accounts[username]["address"]
+
+    # Get the balances
+    eth_balance, nft_balance = await get_balance(user_addr)
+
+    # Format the message
+    await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
+
+@bot.command()
+async def balanceOf(ctx: Messageable, username: str):
+    """Display a user's current ethereum and NFTs balance."""
+
+    # Get the accounts
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    if username not in accounts:
+        await send_no_wallet_msg(ctx)
+        return
+
+    user_addr = accounts[username]["address"]
+
+    # Get the balances
+    eth_balance, nft_balance = await get_balance(user_addr)
+
+    # Format the message
+    await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)

@@ -234,3 +234,15 @@ async def send_nft_msg(ctx, username, nft_img, nft_id, addr):
     embedVar.set_image(url=f"attachment://{nft_img}")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=img_file)
+
+async def send_balance_msg(ctx, username, balance, num_nfts, addr):
+    embedVar = discord.Embed(
+        title=f"{username} has {balance:.3f} ETH and {num_nfts} NFTs!",
+        description=f"\
+        Checkout their collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
+        color=0x00ff00
+    )
+    money_file = discord.File("assets/msgs/money.png", filename="money.png")
+    embedVar.set_image(url="attachment://money.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=money_file)

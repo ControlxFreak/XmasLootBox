@@ -108,6 +108,14 @@ def mint_nfts(addr: str, ipfs_cids: List[str]):
     txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
 
+@to_thread
+def get_balance(addr: str) -> Tuple[float, int]:
+    """Get the current ethereum balance in Eth."""
+    # Get the the current nonce of the owner
+    eth_balance = w3.fromWei(w3.eth.getBalance(addr),"ether")
+    # Get the number of NFTs
+    nft_balance = contract.functions.balanceOf(addr).call()
+    return eth_balance, nft_balance
 
 def create_acct() -> Tuple[str, str]:
     """Create a new ethereum private/public key pair."""
