@@ -1,11 +1,13 @@
-from typing import List, Coroutine, Callable
+from typing import List, Coroutine, Callable, Tuple
 from requests import Session, Request, get
 import dotenv
 import os
 import json
 import functools
 import asyncio
+import secrets
 
+from eth_account import Account
 from web3 import Web3
 
 # Initialize the environment variables
@@ -105,3 +107,13 @@ def mint_nfts(addr: str, ipfs_cids: List[str]):
     signed_txn = w3.eth.account.sign_transaction(txn, account.key)
     txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
     w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
+
+
+def create_acct() -> Tuple[str, str]:
+    """Create a new ethereum private/public key pair."""
+    # Create a secret private key
+    priv = secrets.token_hex(32)
+    private_key = "0x" + priv
+    # Create a public key
+    acct = Account.from_key(private_key)
+    return private_key, acct.address

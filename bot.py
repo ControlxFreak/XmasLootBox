@@ -6,6 +6,7 @@ import random
 import json
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
+import shutil
 
 import discord
 from discord.ext import commands
@@ -18,9 +19,9 @@ from PIL.Image import Image as ImgType
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata, generate_example_art
 from src.artists import add_frame, create_nft_preview
-from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg
+from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg, send_nobody_nfts_msg
 from src.constants import *
-from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs
+from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct
 
 warnings.filterwarnings("ignore")
 
@@ -60,7 +61,8 @@ bot = commands.Bot(
 )
 
 # Initialize the mutex locks
-users_mutex = Lock()
+accounts_mutex = Lock()
+history_mutex = Lock()
 owners_mutex = Lock()
 next_nft_mutex = Lock()
 
@@ -75,35 +77,49 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str
     1. Has an account
     2. Has not tried to claim today
     """
-    users_mutex.acquire()
-
-    # Open the users json
-    with open("users.json", 'r') as f:
-        users = json.load(f)
+    # ========================== #
+    # Accounts
+    # ========================== #
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
 
     # Check if this username has registered to play and has setup an Ethereum wallet
-    if username.lower() not in users.keys():
+    if username.lower() not in accounts.keys():
         await send_no_wallet_msg(ctx)
-        users_mutex.release()
         raise RuntimeError("No Wallet.")
 
+    # ========================== #
+    # History
+    # ========================== #
+    history_mutex.acquire()
+    with open("history.json", 'r') as f:
+        history = json.load(f)
+
     # Check to see if this user has claimed a loot box today
-    if (day_hash in users[username] and not SIM_FLAG):
+    if (day_hash in history[username] and not SIM_FLAG):
         await send_impish_msg(ctx)
-        users_mutex.release()
+        history_mutex.release()
         raise RuntimeError("Multi-claim.")
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today
-    users[username]["claimed"].append(day_hash)
+    history[username].append(day_hash)
 
-    with open("users.json", 'w') as f:
-        json.dump(users, f)
+    # Make a copy just in case
+    shutil.copyfile("history.json", "/tmp/history.json")
+    try:
+        with open("history.json", 'w') as f:
+            json.dump(history, f)
+    except Exception as exc:
+        shutil.copyfile("history.json", "/tmp/history.json")
+        raise exc
 
     # Release the mutex and return
-    users_mutex.release()
+    history_mutex.release()
 
-    return users
+    return accounts
 
 def make_uniq_dirs() -> Tuple[int, str, str, str]:
     """Create the unique image, nft, and metadata directories.
@@ -119,8 +135,13 @@ def make_uniq_dirs() -> Tuple[int, str, str, str]:
     first_nft_id = next_nft_id
 
     # Write-back the next NFT ID so we can release this mutex lock as fast as possible
-    with open('next_id', 'w') as f:
-        f.write(str(next_nft_id + 4))
+    shutil.copyfile("next_id", "/tmp/next_id")
+    try:
+        with open('next_id', 'w') as f:
+            f.write(str(next_nft_id + 4))
+    except Exception as exc:
+        shutil.copyfile("/tmp/next_id", "next_id")
+        raise exc
 
     next_nft_mutex.release()
 
@@ -164,8 +185,10 @@ def save_metadata(metadata: Dict[str, str], unq_dat_dir: str, nft_files: List[st
 
         # Save the file
         data_file = os.path.join(unq_dat_dir, f"{nft_id}.json")
+
         with open(data_file, "w") as f:
             json.dump(metadata_cpy, f)
+
         data_files.append(data_file)
 
     return data_files
@@ -298,8 +321,14 @@ async def claim(ctx: Messageable):
         {"img": img_cid, "nft": nft_cid, "data": data_cid, "ids": [first_nft_id + i for i in range(4)]}
     )
 
-    with open("owners.json", 'w') as f:
-        json.dump(owners, f)
+    shutil.copyfile("owners.json", "/tmp/owners.json")
+    try:
+        with open("owners.json", 'w') as f:
+            json.dump(owners, f)
+    except Exception as exc:
+        shutil.copyfile("/tmp/owners.json", "owners.json")
+        raise exc
+
     owners_mutex.release()
 
     print("Minting NFTs...")
@@ -318,8 +347,11 @@ async def claim(ctx: Messageable):
     await send_success_msg(ctx, user_addr, first_nft_id, preview_filename, img_cid, nft_cid)
 
 @bot.command()
-async def add(ctx: Messageable, username: str, user_addr: str):
+async def add(ctx: Messageable, username: str):
     """Add a new user to the bot. This can only be run by @aoth."""
+    # =============================== #
+    # Verification
+    # =============================== #
     # Make sure that the only user that is allowed to call this is me
     caller = (ctx.message.author.name).lower()
 
@@ -327,42 +359,83 @@ async def add(ctx: Messageable, username: str, user_addr: str):
         await send_not_aoth_msg(ctx)
         return
 
-    # Add the user to the users file
-    users_mutex.acquire()
+    # =============================== #
+    # Accounts
+    # =============================== #
+    accounts_mutex.acquire()
 
-    with open("users.json", 'r') as f:
-        users = json.load(f)
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
 
-    if username.lower() in users:
-        await send_user_has_account(ctx, username, users[username]["address"])
-        users_mutex.release()
+    if username.lower() in accounts:
+        await send_user_has_account(ctx, username, accounts[username]["address"])
+        accounts_mutex.release()
         return
 
-    users[username] = {
-        "address": user_addr,
-        "claimed": []
+    # Generate a private / public key
+    private_key, public_key = create_acct()
+
+    accounts[username] = {
+        "address": public_key,
+        "private": private_key
     }
 
-    with open("users.json", 'w') as f:
-        json.dump(users, f)
+    # Save the accounts file (first make a copy just in case...)
+    shutil.copyfile("accounts.json", "/tmp/accounts.json")
+    try:
+        with open("accounts.json", 'w') as f:
+            json.dump(accounts, f)
+    except Exception as exc:
+        shutil.copyfile("/tmp/accounts.json", "accounts.json")
+        raise exc
 
-    # Release the mutex and return
-    users_mutex.release()
+    # Release the mutex
+    accounts_mutex.release()
 
-    # Add the user to the owner's file
+    # =============================== #
+    # History
+    # =============================== #
+    history_mutex.acquire()
+
+    with open("history.json", "r") as f:
+        history = json.load(f)
+    
+    history[username] = []
+
+    # Save the accounts file (first make a copy just in case...)
+    shutil.copyfile("history.json", "/tmp/history.json")
+    try:
+        with open("history.json", "w") as f:
+            json.dump(history, f)
+    except Exception as exc:
+        shutil.copyfile("/tmp/history.json", "history.json")
+        raise exc
+
+    history_mutex.release()
+
+    # =============================== #
+    # Owners
+    # =============================== #
     owners_mutex.acquire()
 
     with open("owners.json", "r") as f:
         owners = json.load(f)
-    
+
     owners[username] = []
 
-    with open("owners.json", "w") as f:
-        json.dump(f, owners)
-    
+    shutil.copyfile("owners.json", "/tmp/owners.json")
+    try:
+        with open("owners.json", "w") as f:
+            json.dump(owners, f)
+    except:
+        shutil.copyfile("/tmp/owners.json", "owners.json")
+
     owners_mutex.release()
 
-    await send_created_msg(ctx, username, users[username]["address"])
+    # =============================== #
+    # Send the msg
+    # =============================== #
+    await send_created_msg(ctx, username, public_key)
 
 @bot.command()
 async def address(ctx: Messageable):
@@ -371,16 +444,16 @@ async def address(ctx: Messageable):
     username = (ctx.message.author.name).lower()
 
     # Get their address
-    users_mutex.acquire()
-    with open("users.json", 'r') as f:
-        users = json.load(f)
-    users_mutex.release()
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
 
-    if username not in users:
+    if username not in accounts:
         await send_no_wallet_msg(ctx)
         return
 
-    user_addr = users[username]["address"]
+    user_addr = accounts[username]["address"]
 
     # Send them a message
     await send_addr_msg(ctx, user_addr)
@@ -392,13 +465,13 @@ async def _users(ctx: Messageable):
     NOTE: This renders poorly on mobile and I can't get the hyperlinks to work.
     """
     # Get the users
-    users_mutex.acquire()
-    with open("users.json", 'r') as f:
-        users = json.load(f)
-    users_mutex.release()
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
 
     # Send them a message
-    await send_users_msg(ctx, users)
+    await send_users_msg(ctx, accounts)
 
 @bot.command()
 async def nft(ctx: Messageable):
@@ -412,13 +485,13 @@ async def nft(ctx: Messageable):
     owners_mutex.release()
 
     # Load the address
-    users_mutex.acquire()
-    with open("users.json", 'r') as f:
-        users = json.load(f)
-    users_mutex.release()
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
 
     # Check to see that this user exists
-    if username not in owners or username not in users:
+    if (username not in owners) or (username not in accounts):
         await send_no_wallet_msg(ctx)
         return
 
@@ -429,7 +502,7 @@ async def nft(ctx: Messageable):
         await send_no_nfts_msg(ctx)
         return
 
-    # Randomlly select one
+    # Randomly select one
     cid = random.choice(cids)
     nft_id = random.choice(cid["ids"])
     nft_filename = f"{nft_id}.gif"
@@ -438,7 +511,7 @@ async def nft(ctx: Messageable):
     nft_img = await get_from_ipfs(cid["nft"], nft_filename)
 
     # Send it
-    await send_nft_msg(ctx, username, nft_img, nft_id, users[username]["address"])
+    await send_nft_msg(ctx, username, nft_img, nft_id, accounts[username]["address"])
 
 @bot.command(name="random")
 async def _random(ctx: Messageable):
@@ -450,29 +523,35 @@ async def _random(ctx: Messageable):
     owners_mutex.release()
 
     # Load the address
-    users_mutex.acquire()
-    with open("users.json", 'r') as f:
-        users = json.load(f)
-    users_mutex.release()
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
 
-    # Randomly select a user
-    print(list(users.keys()))
-    username = random.choice(list(users.keys()))
-    print(username)
+    usernames = list(accounts.keys())
+    while len(usernames) > 0:
+        # Randomly select a user
+        username = random.choice(usernames)
 
-    # Randomly select an nft
-    cid = random.choice(owners[username])
-    nft_id = random.choice(cid["ids"])
-    nft_filename = f"{nft_id}.gif"
+        # Check to see if they have an NFT
+        if len(owners[username]) == 0:
+            usernames.remove(username)
+            continue
 
-    print(cid)
-    print(nft_id)
+        # Randomly select an nft
+        cid = random.choice(owners[username])
+        nft_id = random.choice(cid["ids"])
+        nft_filename = f"{nft_id}.gif"
 
-    # Download it and save it to /tmp
-    nft_img = await get_from_ipfs(cid["nft"], nft_filename)
+        # Download it and save it to /tmp
+        nft_img = await get_from_ipfs(cid["nft"], nft_filename)
 
-    # Send it
-    await send_nft_msg(ctx, username, nft_img, nft_id, users[username]["address"])
+        # Send it
+        await send_nft_msg(ctx, username, nft_img, nft_id, accounts[username]["address"])
+        return
+
+    # We never found anyone
+    await send_nobody_nfts_msg(ctx)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)

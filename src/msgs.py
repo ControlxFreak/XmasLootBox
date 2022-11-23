@@ -190,13 +190,13 @@ async def send_admirable_msg(ctx, username, rarity_label, description):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=lootbox_file)
 
-async def send_users_msg(ctx, users):
+async def send_users_msg(ctx, accounts):
     """Send a message to show the usernames and addresses."""
     output = table2ascii(
         header=["Username", "Address", "Collection"],
         body=[
-            [username, data["address"], f"https://testnets.opensea.io/{data['address']}"]
-            for username, data in users.items()
+            [username, acct["address"], f"https://testnets.opensea.io/{acct['address']}"]
+            for username, acct in accounts.items()
         ],
     )
 
@@ -204,7 +204,24 @@ async def send_users_msg(ctx, users):
     await ctx.send(f"```\n{output}\n```")
 
 async def send_no_nfts_msg(ctx):
-    await ctx.channel.send("No NFTS")
+    # Configure the message
+    embedVar = discord.Embed(
+        title=f"You Don't have any NFTs, {ctx.message.author.name}!",
+        description=f"Use the !claim command to get your first gift!",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_nobody_nfts_msg(ctx):
+    # Configure the message
+    embedVar = discord.Embed(
+        title=f"Nobody has any NFTs yet!",
+        description=f"Use the !claim command to get your first gift!",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
 
 async def send_nft_msg(ctx, username, nft_img, nft_id, addr):
     embedVar = discord.Embed(
