@@ -4,6 +4,7 @@ Merry Christmas!
 Welcome to the 2022 Discord Advent Calendar!
 
 Every day in the month of December, users will be able to interact with the Discord bot to claim a special gift: *4 completely unique NFTs and 0.01 ETH sent to your very own Ethereum (testnet) wallet!*
+
 Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images.
 Each NFT will be randomly generated with different attributes and rarity levels.
 Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds.
