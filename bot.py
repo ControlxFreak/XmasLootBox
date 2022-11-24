@@ -21,7 +21,7 @@ from src.generators import generate_dalle_description, generate_dalle_art, gener
 from src.artists import add_frame, create_nft_preview
 from src.msgs import *
 from src.constants import *
-from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct, get_balance, get_owner, transfer_nft
+from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct, get_balance, get_owner, transfer_nft, send_daily_eth
 
 warnings.filterwarnings("ignore")
 
@@ -333,7 +333,14 @@ async def claim(ctx: Messageable):
 
     print("Minting NFTs...")
     # res = await mint_nfts(user_addr, data_uris)
-    # TODO: Check if result worked or not.
+    # TODO: Check if result worked or not
+
+    # =============================== #
+    # Send 0.010 eth to get started
+    # =============================== #
+    print("Sending eth...")
+    # res = await send_daily_eth(user_addr)
+    # TODO: Check if this worked or not
 
     # Create the preview image
     print("Creating Preview...")
@@ -432,12 +439,6 @@ async def add(ctx: Messageable, username: str):
         shutil.copyfile("/tmp/owners.json", "owners.json")
 
     owners_mutex.release()
-
-    # =============================== #
-    # Send 0.01 eth to get started
-    # =============================== #
-    await send_eth()
-
 
     # =============================== #
     # Send the msg

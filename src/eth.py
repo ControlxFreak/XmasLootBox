@@ -9,6 +9,7 @@ import secrets
 
 from eth_account import Account
 from web3 import Web3
+from web3.gas_strategies.rpc import rpc_gas_price_strategy
 
 # Initialize the environment variables
 dotenv.load_dotenv()
@@ -29,6 +30,7 @@ ipfs_headers = {
 # Instantiate the web3 client once since this is time-consuming
 ALCHEMY_URL = f"https://eth-goerli.g.alchemy.com/v2/{ALCHEMY_TOKEN}"
 w3 = Web3(Web3.HTTPProvider(ALCHEMY_URL))
+w3.eth.set_gas_price_strategy(rpc_gas_price_strategy)
 
 # Create the account object
 account = w3.eth.account.from_key(OWNER_PRIVATE_KEY)
@@ -140,7 +142,7 @@ def get_owner(nft_id: str) -> Optional[str]:
         return None
 
 @to_thread
-def transfer_nft(sender_addr, sender_priv, recipient_addr, nft_id) -> bool:
+def transfer_nft(sender_addr: str, sender_priv: str, recipient_addr: str, nft_id: int) -> bool:
     """Transfer nft # nft_id from sender_addr to recipient_addr."""
     try:
         # Get the the current nonce of the owner
@@ -154,6 +156,31 @@ def transfer_nft(sender_addr, sender_priv, recipient_addr, nft_id) -> bool:
 
         # Sign and send the transaction
         signed_txn = w3.eth.account.sign_transaction(txn, sender_priv)
+        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
+        return True
+    except Exception as exc:
+        print(exc)
+        return False
+
+@to_thread
+def send_daily_eth(addr) -> bool:
+    """Transfer 0.010 ETH to a user."""
+    try:
+        # Get the the current nonce of the owner
+        nonce = w3.eth.get_transaction_count(OWNER_ADDRESS)
+
+        # Build the transaction
+        txn = {
+            'nonce': nonce,
+            'to': addr,
+            'value': w3.toWei(0.01, 'ether'),
+            "gasPrice": w3.eth.generate_gas_price(),
+            "gas": 21000, # standard value
+        }
+
+        # Sign and send the transaction
+        signed_txn = w3.eth.account.sign_transaction(txn, account.key)
         txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
         w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
         return True

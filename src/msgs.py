@@ -311,7 +311,7 @@ async def send_faq_msg(ctx):
         1. Dalle is slow (~30s-1min)\n\
         2. I am slow (*..well my program at least..*) (~10s)\n\
         3. Uploading to IPFS is slow (~10s)\n\
-        4. Interacting with an Ethereum testnet is slow (~10s-1 min)\n\
+        4. Interacting with an Ethereum testnet is slow (~30s-1 min)\n\
         5. OpenSea is slow (~30s - 1 min)\n\n\
         so... sorry! I hope it is worth the wait. \
         A lot of the variability depends on how busy the Ethereum network is at the time. \
