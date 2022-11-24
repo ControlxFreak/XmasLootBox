@@ -259,8 +259,7 @@ async def claim(ctx: Messageable):
         images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
 
     # Sample the frame
-    # frame_name = sample_frame(rarity_label)
-    frame_name = None
+    frame_name = sample_frame(rarity_label)
 
     # ============================================ #
     # NFT Generation
