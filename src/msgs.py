@@ -306,14 +306,14 @@ async def send_faq_msg(ctx):
     embedVar = discord.Embed(
         title="Frequently Asked Questions",
         description="\
-        **Why is this bot so freaking slow?**\n\
+        **Why is this bot so slow?**\n\
         For a couple of reasons...\n\
         1. Dalle is slow (~30s-1min)\n\
         2. I am slow (*..well my program at least..*) (~10s)\n\
         3. Uploading to IPFS is slow (~10s)\n\
         4. Interacting with an Ethereum testnet is slow (~10s-1 min)\n\
         5. OpenSea is slow (~30s - 1 min)\n\n\
-        so... sorry! \
+        so... sorry! I hope it is worth the wait. \
         A lot of the variability depends on how busy the Ethereum network is at the time. \
         Since we are using a testnet, it is extra slow... but at least it is free!\n\
         If none of the above made sense, read below or TL;DR; I am cheap and used free stuff as much as possible.\n\n\
@@ -321,19 +321,38 @@ async def send_faq_msg(ctx):
         Ethereum is just a big-ol' decentralized computer.\n\
         It sounds fancy to tech people cause it uses a blockchain to maintain its state. \
         It sounds appealing to finance people cause it can be used in a secure and trustless manner for financial transactions (i.e., without the need for any 3rd parties trying to take a cut of the profits). \
-        But it is really just a big virtual machine spread out accross the world, run by millions of people, owned by no one, that people can use to run stupid code on... like this! \
-        [Here is probably a better answer than I can give](https://ethereum.org/en/)\n\n\
+        But it is really just a big virtual machine spread out across the world, run by millions of people, owned by no one, that people can use to run stupid code on... like this! \
+        [Here is more information](https://ethereum.org/en/)\n\n\
         **What is the difference between ETH and Ethereum?**\n\
         ETH is just the $$ used in the Ethereum network to pay for things. \
-        Since no one owns this massive lump of computers, no one can directly stop malicious users from trying to break it. \
-        So, to help prevent that, it costs a small amount of ETH ([called gas](https://ethereum.org/en/developers/docs/gas/)) to execute software on the Ethereum network. \
+        Since no single entity owns this massive lump of computers, no one can directly stop malicious users from trying to break it. \
+        So, to prevent that, it costs ETH ([called gas](https://ethereum.org/en/developers/docs/gas/)) to execute software on the Ethereum network. \
         This is why you need ETH in your account to do things like send NFTs.\n\n\
         **What is an NFT?**\n\
-        An NFT is really just a peice of code that says person X owns this unique digital asset. \
+        An NFT is really just a piece of code that says person X owns this unique digital asset. \
         That asset (in our case, the image) is represented by a token and is sent to the owner's address. \
         This becomes cryptographically secured in such a manner that *the proof of ownership* cannot be duplicated (of course the image can be duplicated, but no one else can prove they own it is the idea). \
-        People are now using this to sell houses and stuff, it doesn't have to be an image. \
-        [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)\n\n\
+        People are now using NFTs to sell houses and stuff, it doesn't have to be cat images. \
+        [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)",
+        color=0x0000ff
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+    embedVar = discord.Embed(
+        title="Frequently Asked Questions (ctn.)",
+        description="\
+        **How much ETH do I need to gift an NFT?**\n\
+        This really depends on how busy the network is.\n\
+        *Short answer:* I think ~0.004 ETH should be good on average.\n\
+        *Long answer:* As described in (**What is the difference between ETH and Ethereum?**), every transaction requires gas to prevent malicious users from attacking the network. \
+        The amount of gas required to do each operation on the network varies with network traffic. \
+        Busy network => high gas prices, idle network => low gas prices. \
+        On average, the price of gas is around ~50Gwei (50e-9 ETH... just think of Gwei as the 'nano-' equivalent in meters), but this fluctuates greatly. \
+        When developing this bot, most of my transactions were around 10Gwei, but I've seen them go as high as 100Gwei at times. \
+        Now, that price is *per computer operation*... transferring an NFT requires around 65,000 operations, meaning the cost is around (65000 * 50e-9) = 0.00325 ETH. \n\
+        (There is also a tip that you need to pay the node operators to incentivize them to continue donating their computers to the Ethereum network... but that is cheap on a testnet so I rounded to 0.004 ETH.)\n\
+        [Here is more information if you are interested](https://ethereum.org/en/developers/docs/gas/).\n\n\
         **What is IPFS?**\n\
         Just think of IPFS as a decentralized dropbox or google drive.\n\
         It allows you to store your data in a decentralized way (i.e., without the need for a 3rd party like Dropbox or Google). \
@@ -347,7 +366,7 @@ async def send_faq_msg(ctx):
         However, there is no free lunch. Since it is just used for testing, it can be way more buggy than the real Ethereum network and (since it doesn't cost real $$) developers SPAM the network with transactions all the time and cause it to slow down... but it is free.\n\
         If you care, we are using the [Goerli testnet](https://goerli.net/). There are others, but this is the best IMO.\n\n\
         **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
-        Great question. 🤷‍♂️\n",
+        Great question. 🤷‍♂️ I needed something to do when Katelyn was asleep and I missed coding.\n",
         color=0x0000ff
     )
     # Send the message to the channel

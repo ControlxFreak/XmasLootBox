@@ -349,7 +349,7 @@ async def claim(ctx: Messageable):
 
 @bot.command()
 async def add(ctx: Messageable, username: str):
-    """Add a new user to the bot. This can only be run by @aoth."""
+    """Add a new user. This can only be run by @aoth."""
     # =============================== #
     # Verification
     # =============================== #
@@ -432,6 +432,12 @@ async def add(ctx: Messageable, username: str):
         shutil.copyfile("/tmp/owners.json", "owners.json")
 
     owners_mutex.release()
+
+    # =============================== #
+    # Send 0.01 eth to get started
+    # =============================== #
+    await send_eth()
+
 
     # =============================== #
     # Send the msg
