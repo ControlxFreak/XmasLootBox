@@ -246,3 +246,109 @@ async def send_balance_msg(ctx, username, balance, num_nfts, addr):
     embedVar.set_image(url="attachment://money.png")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=money_file)
+
+async def send_nft_dne_msg(ctx, nft_id, addr):
+    embedVar = discord.Embed(
+        title=f"{ctx.message.author.name}, NFT # {nft_id} Does Not Exist.",
+        description=f"\
+        Checkout your collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_not_your_nft_msg(ctx, nft_id, sender_addr, nft_owner):
+    embedVar = discord.Embed(
+        title=f"{ctx.message.author.name}, NFT # {nft_id} Is Not Yours.",
+        description=f"\
+        NFT # {nft_id} is owned by {nft_owner}.\n\
+        Checkout your collection on [OpenSea](https://testnets.opensea.io/{sender_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_transfer_error_msg(ctx, sender, recipient, nft_id):
+    embedVar = discord.Embed(
+        title=f"The transfer of NFT # {nft_id} from {sender} to {recipient} failed.",
+        description=f"\
+        This most likely occurred due to a lack of funds in {sender}'s account.\n\
+        Check your funds using the !balance command.",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_transfer_success_msg(ctx, sender, recipient, nft_id, sender_addr, recipient_addr):
+    embedVar = discord.Embed(
+        title=f"Successfully transferred NFT # {nft_id} from {sender} to {recipient}!",
+        description=f"\
+        Checkout your new collections:\n\
+        [{sender}](https://testnets.opensea.io/{sender_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)\n\
+        [{recipient}](https://testnets.opensea.io/{recipient_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
+        color=0x00ff00
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_transfer_conf_msg(ctx, sender, recipient, nft_id):
+    embedVar = discord.Embed(
+        title=f"Sending NFT # {nft_id} as a gift from {sender} to {recipient}...",
+        description=f"\
+        My elves are flying the payload over now!\n\
+        This might take 30s - 1min depending on network traffic.",
+        color=0x00ff00
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_faq_msg(ctx):
+    embedVar = discord.Embed(
+        title="Frequently Asked Questions",
+        description="\
+        **Why is this bot so freaking slow?**\n\
+        For a couple of reasons...\n\
+        1. Dalle is slow (~30s-1min)\n\
+        2. I am slow (*..well my program at least..*) (~10s)\n\
+        3. Uploading to IPFS is slow (~10s)\n\
+        4. Interacting with an Ethereum testnet is slow (~10s-1 min)\n\
+        5. OpenSea is slow (~30s - 1 min)\n\n\
+        so... sorry! \
+        A lot of the variability depends on how busy the Ethereum network is at the time. \
+        Since we are using a testnet, it is extra slow... but at least it is free!\n\
+        If none of the above made sense, read below or TL;DR; I am cheap and used free stuff as much as possible.\n\n\
+        **What is Ethereum?**\n\
+        Ethereum is just a big-ol' decentralized computer.\n\
+        It sounds fancy to tech people cause it uses a blockchain to maintain its state. \
+        It sounds appealing to finance people cause it can be used in a secure and trustless manner for financial transactions (i.e., without the need for any 3rd parties trying to take a cut of the profits). \
+        But it is really just a big virtual machine spread out accross the world, run by millions of people, owned by no one, that people can use to run stupid code on... like this! \
+        [Here is probably a better answer than I can give](https://ethereum.org/en/)\n\n\
+        **What is the difference between ETH and Ethereum?**\n\
+        ETH is just the $$ used in the Ethereum network to pay for things. \
+        Since no one owns this massive lump of computers, no one can directly stop malicious users from trying to break it. \
+        So, to help prevent that, it costs a small amount of ETH ([called gas](https://ethereum.org/en/developers/docs/gas/)) to execute software on the Ethereum network. \
+        This is why you need ETH in your account to do things like send NFTs.\n\n\
+        **What is an NFT?**\n\
+        An NFT is really just a peice of code that says person X owns this unique digital asset. \
+        That asset (in our case, the image) is represented by a token and is sent to the owner's address. \
+        This becomes cryptographically secured in such a manner that *the proof of ownership* cannot be duplicated (of course the image can be duplicated, but no one else can prove they own it is the idea). \
+        People are now using this to sell houses and stuff, it doesn't have to be an image. \
+        [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)\n\n\
+        **What is IPFS?**\n\
+        Just think of IPFS as a decentralized dropbox or google drive.\n\
+        It allows you to store your data in a decentralized way (i.e., without the need for a 3rd party like Dropbox or Google). \
+        There are millions of computers around the world that store a small encrypted fraction of your file and when you want to access your file, it gets reassembled and sent to you. \
+        Crypto people like it because it isn't owned by anyone (so it is censorship resistant). \
+        I like it because its free (typically). [Here is more information](https://en.wikipedia.org/wiki/InterPlanetary_File_System).\n\n\
+        **What is a Testnet?**\n\
+        An Ethereum Testnet is a version of Ethereum made for developers.\n\
+        Nothing on it has any value in the real world. \
+        You cannot sell your ETH from this network for USD or anything like that... In fact, websites will give you free ETH on a testnet to use for development. \
+        However, there is no free lunch. Since it is just used for testing, it can be way more buggy than the real Ethereum network and (since it doesn't cost real $$) developers SPAM the network with transactions all the time and cause it to slow down... but it is free.\n\
+        If you care, we are using the [Goerli testnet](https://goerli.net/). There are others, but this is the best IMO.\n\n\
+        **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
+        Great question. 🤷‍♂️\n",
+        color=0x0000ff
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)

@@ -1,4 +1,4 @@
-from typing import List, Coroutine, Callable, Tuple
+from typing import List, Coroutine, Callable, Tuple, Optional
 from requests import Session, Request, get
 import dotenv
 import os
@@ -88,25 +88,38 @@ def get_from_ipfs(cid: str, filename: str) -> str:
     open(out_filename, "wb").write(response.content)
     return out_filename
 
+def create_acct() -> Tuple[str, str]:
+    """Create a new ethereum private/public key pair."""
+    # Create a secret private key
+    priv = secrets.token_hex(32)
+    private_key = "0x" + priv
+    # Create a public key
+    acct = Account.from_key(private_key)
+    return private_key, acct.address
+
 @to_thread
-def mint_nfts(addr: str, ipfs_cids: List[str]):
+def mint_nfts(addr: str, ipfs_cids: List[str]) -> bool:
     """Mint the NFT located at `ipfs_cid` to address `addr`"""
+    try:
+        # Get the the current nonce of the owner
+        nonce = w3.eth.get_transaction_count(OWNER_ADDRESS)
 
-    # Get the the current nonce of the owner
-    nonce = w3.eth.get_transaction_count(OWNER_ADDRESS)
+        # Build the transaction
+        txn = contract.functions.mint4NFTs(addr, ipfs_cids).build_transaction({
+            'from': account.address,
+            'nonce': nonce,
+            # 'maxPriorityFeePerGas': w3.toWei(10, 'gwei'),   # See issue #20 for math
+            # 'maxFeePerGas': w3.toWei(200, 'gwei'),          # See issue #20 for math
+        })
 
-    # Build the transaction
-    txn = contract.functions.mint4NFTs(addr, ipfs_cids).build_transaction({
-        'from': account.address,
-        'nonce': nonce,
-        # 'maxPriorityFeePerGas': w3.toWei(10, 'gwei'),   # See issue #20 for math
-        # 'maxFeePerGas': w3.toWei(200, 'gwei'),          # See issue #20 for math
-    })
-
-    # Sign and send the transaction
-    signed_txn = w3.eth.account.sign_transaction(txn, account.key)
-    txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
-    w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
+        # Sign and send the transaction
+        signed_txn = w3.eth.account.sign_transaction(txn, account.key)
+        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
+        return True
+    except Exception as exc:
+        print(exc)
+        return False
 
 @to_thread
 def get_balance(addr: str) -> Tuple[float, int]:
@@ -117,11 +130,33 @@ def get_balance(addr: str) -> Tuple[float, int]:
     nft_balance = contract.functions.balanceOf(addr).call()
     return eth_balance, nft_balance
 
-def create_acct() -> Tuple[str, str]:
-    """Create a new ethereum private/public key pair."""
-    # Create a secret private key
-    priv = secrets.token_hex(32)
-    private_key = "0x" + priv
-    # Create a public key
-    acct = Account.from_key(private_key)
-    return private_key, acct.address
+@to_thread
+def get_owner(nft_id: str) -> Optional[str]:
+    """Get the owner of this NFT."""
+    try:
+        return contract.functions.ownerOf(nft_id).call()
+    except Exception as exc:
+        print(exc)
+        return None
+
+@to_thread
+def transfer_nft(sender_addr, sender_priv, recipient_addr, nft_id) -> bool:
+    """Transfer nft # nft_id from sender_addr to recipient_addr."""
+    try:
+        # Get the the current nonce of the owner
+        nonce = w3.eth.get_transaction_count(sender_addr)
+
+        # Build the transaction
+        txn = contract.functions.transferFrom(sender_addr, recipient_addr, nft_id).build_transaction({
+            'from': sender_addr,
+            'nonce': nonce,
+        })
+
+        # Sign and send the transaction
+        signed_txn = w3.eth.account.sign_transaction(txn, sender_priv)
+        txn_hash = w3.eth.send_raw_transaction(signed_txn.rawTransaction)
+        w3.eth.waitForTransactionReceipt(txn_hash, timeout=100000)
+        return True
+    except Exception as exc:
+        print(exc)
+        return False

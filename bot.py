@@ -19,9 +19,9 @@ from PIL.Image import Image as ImgType
 from src.rarity import sample_rarity_label, sample_attributes, sample_frame, sample_rarity_label_uniform
 from src.generators import generate_dalle_description, generate_dalle_art, generate_erc721_metadata, generate_example_art
 from src.artists import add_frame, create_nft_preview
-from src.msgs import get_date, send_eoe_msg, send_no_wallet_msg, send_admirable_msg, send_impish_msg, send_success_msg, send_not_aoth_msg, send_addr_msg, send_created_msg, send_user_has_account, send_users_msg, send_no_nfts_msg, send_nft_msg, send_nobody_nfts_msg, send_balance_msg
+from src.msgs import *
 from src.constants import *
-from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct, get_balance
+from src.eth import pin_to_ipfs, mint_nfts, get_from_ipfs, create_acct, get_balance, get_owner, transfer_nft
 
 warnings.filterwarnings("ignore")
 
@@ -332,7 +332,8 @@ async def claim(ctx: Messageable):
     owners_mutex.release()
 
     print("Minting NFTs...")
-    # await mint_nfts(user_addr, data_uris)
+    # res = await mint_nfts(user_addr, data_uris)
+    # TODO: Check if result worked or not.
 
     # Create the preview image
     print("Creating Preview...")
@@ -597,6 +598,72 @@ async def balanceOf(ctx: Messageable, username: str):
 
     # Format the message
     await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
+
+@bot.command()
+async def gift(ctx: Messageable, recipient: str, nft_id: int):
+    """Randomly send one of your NFTs to a user!
+
+    WARNING: This will use some of your ethereum to pay for the gas fees!
+
+    Args:
+        ctx (Messageable): Discord Context
+        recipient (str): Recipient of the NFT. Use the official discord name, not their server nickname.
+    """
+    sender = (ctx.message.author.name).lower()
+
+    # Get the accounts
+    accounts_mutex.acquire()
+    with open("accounts.json", 'r') as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    if sender not in accounts:
+        await send_no_wallet_msg(ctx)
+        return
+
+    # Get the addresses
+    sender_addr = accounts[sender]["address"]
+    sender_priv = accounts[sender]["private"]
+
+    # Check that the sender actually owns this NFT
+    nft_owner = await get_owner(nft_id)
+
+    if nft_owner is None:
+        await send_nft_dne_msg(ctx, nft_id, sender_addr)
+        return
+    
+    if nft_owner != sender_addr:
+        with open("accounts.json", "r") as f:
+            accounts = json.load(f)
+
+        inverse_accounts = {val["address"]: key for key, val in accounts.items()}
+        real_owner_name = inverse_accounts[nft_owner]
+        await send_not_your_nft_msg(ctx, nft_id, sender_addr, real_owner_name)
+        return
+
+    if recipient not in accounts:
+        await send_no_wallet_msg(ctx)
+        return
+
+    # Get the addresses
+    recipient_addr = accounts[recipient]["address"]
+
+    # Send a confirmation message
+    await send_transfer_conf_msg(ctx, sender, recipient, nft_id)
+
+    # Conduct the transaction
+    res = await transfer_nft(sender_addr, sender_priv, recipient_addr, nft_id)
+
+    if res is None:
+        await send_transfer_error_msg(ctx, sender, recipient, nft_id)
+        return
+
+    await send_transfer_success_msg(ctx, sender, recipient, nft_id, sender_addr, recipient_addr)
+
+@bot.command()
+async def faq(ctx: Messageable):
+    """Frequently Asked Questions."""
+    await send_faq_msg(ctx)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
