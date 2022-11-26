@@ -77,6 +77,8 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str
     1. Has an account
     2. Has not tried to claim today
     """
+    username = username.lower()
+
     # ========================== #
     # Accounts
     # ========================== #
@@ -86,7 +88,7 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str
     accounts_mutex.release()
 
     # Check if this username has registered to play and has setup an Ethereum wallet
-    if username.lower() not in accounts.keys():
+    if username not in accounts.keys():
         await send_no_wallet_msg(ctx)
         raise RuntimeError("No Wallet.")
 
@@ -356,6 +358,8 @@ async def claim(ctx: Messageable):
 @bot.command()
 async def add(ctx: Messageable, username: str):
     """Add a new user. This can only be run by @aoth."""
+    username = username.lower()
+
     # =============================== #
     # Verification
     # =============================== #
@@ -374,7 +378,7 @@ async def add(ctx: Messageable, username: str):
     with open("accounts.json", 'r') as f:
         accounts = json.load(f)
 
-    if username.lower() in accounts:
+    if username in accounts:
         await send_user_has_account(ctx, username, accounts[username]["address"])
         accounts_mutex.release()
         return
@@ -586,6 +590,7 @@ async def balance(ctx: Messageable):
 @bot.command()
 async def balanceOf(ctx: Messageable, username: str):
     """Display a user's current ethereum and NFTs balance."""
+    username = username.lower()
 
     # Get the accounts
     accounts_mutex.acquire()
@@ -615,6 +620,7 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
         ctx (Messageable): Discord Context
         recipient (str): Recipient of the NFT. Use the official discord name, not their server nickname.
     """
+    recipient = recipient.lower()
     sender = (ctx.message.author.name).lower()
 
     # Get the accounts
@@ -637,7 +643,7 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
     if nft_owner is None:
         await send_nft_dne_msg(ctx, nft_id, sender_addr)
         return
-    
+
     if nft_owner != sender_addr:
         with open("accounts.json", "r") as f:
             accounts = json.load(f)
