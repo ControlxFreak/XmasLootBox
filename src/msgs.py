@@ -387,14 +387,26 @@ async def send_welcome_msg(ctx):
     embedVar = discord.Embed(
         title="HO HO HO HO! MERRY CHRISTMAS! Welcome to the 2022 Discord Advent Calendar!",
         description=f"\
-        Every day in the month of December, my elves will make you a special gift: *4 completely unique NFTs and 0.01 ETH sent to your very own Ethereum (testnet) wallet!*\n\n\
-        My new AI elves have been working hard all year to perfectly generate unique gifts for all the good boys and girls. \
-        Gifts come in a variety of rarity levels and include an assortment of subjects, hats, eyes, scarfs and backgrounds. \
-        With over 1 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!",
-        color=0x00ff00
+        Every day in the month of December, my elves will make you a special gift:\n\n*4 completely unique NFTs and 0.01 ETH!*\n\n\
+        My new AI elves have been working hard all year to perfectly generate unique gifts, spanning a variety of rarity levels and an assortment of subjects, hats, eyes, scarfs and backgrounds. \
+        With over 1 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!\n\n\
+        *To get started, write @SantaBot a Christmas message asking to join!* \
+        If you impress, @SantaBot he will add you to the game!*\n\n\
+        *Once you have been added, use the !claim command to claim your daily gift!*\n\n\
+        Throughout the month, we can see our collection grow on [OpenSea]({OPENSEA_URL})!\n\n",
+        color=0xc54245
     )
-    img_file = discord.File(nft_img, filename=nft_img)
-    embedVar.set_image(url=f"attachment://{nft_img}")
+    preview_file = discord.File("assets/example/preview.gif", filename="preview.gif")
+    embedVar.set_image(url="attachment://preview.gif")
     # Send the message to the channel
-    await ctx.channel.send(embed=embedVar, file=img_file)
+    await ctx.channel.send(embed=embedVar, file=preview_file)
 
+async def send_invalid_username(ctx, username):
+    embedVar = discord.Embed(
+        title=f"Cannot create account for: {username}.",
+        description="This user is neither on my naughty nor nice list!\n\n\
+        Double check the spelling and be sure to use their *actual* name (not the server nickname and do not include the numbers).",
+        color=0xff0000
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)

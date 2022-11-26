@@ -40,6 +40,7 @@ dalle = Dalle2(OPENAI_TOKEN)
 # Initialize the discord bot
 intents = discord.Intents.default()
 intents.message_content = True
+intents.members = True
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
@@ -376,6 +377,12 @@ async def add(ctx: Messageable, username: str):
         await send_not_aoth_msg(ctx)
         return
 
+    all_members = [mem.name.lower() for mem in bot.get_all_members()]
+
+    if username not in all_members:
+        await send_invalid_username(ctx, username)
+        return
+
     # =============================== #
     # Accounts
     # =============================== #
@@ -682,6 +689,17 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
 async def faq(ctx: Messageable):
     """Frequently Asked Questions."""
     await send_faq_msg(ctx)
+
+@bot.command()
+async def welcome(ctx: Messageable):
+    """Send the welcome message. Only @aoth can send this."""
+    # Make sure that the only user that is allowed to call this is me
+    caller = (ctx.message.author.name).lower()
+
+    if caller.lower() != "aoth":
+        return
+
+    await send_welcome_msg(ctx)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
