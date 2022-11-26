@@ -39,7 +39,7 @@ def add_frame(image: Image, frame_name: str) -> List[ImgType]:
         image = image.resize((IMG_WIDTH, IMG_HEIGHT))
 
         # Get the frame
-        offset = get_frame_offset(frame_path)
+        offset = get_frame_offset(frame_name)
 
         # Create the base background image and paste the desired image ontop
         base_layer = Image.new(mode="RGB", size=(IMG_WIDTH + offset, IMG_HEIGHT + offset))
@@ -88,12 +88,11 @@ def create_img_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[I
 
 def create_nft_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[ImgType]:
     """Creates a 4x4 preview of your NFTs.
-    NOTE: This requires that exactly 4 NFT gifs are provided.
+    NOTE: This requires that exactly 4 NFT gifs are provided and that they all share exactly the same number of frames.
     """
     # Construct a base image
     # We will make it half the size to fit in the discord message
     offset = get_frame_offset(frame_name)
-
     width = (IMG_WIDTH + offset) // 2
     height =  (IMG_HEIGHT + offset) // 2
     base_preview = Image.new(mode="RGB", size=(2 * width, 2 * height))

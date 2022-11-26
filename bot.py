@@ -355,6 +355,12 @@ async def claim(ctx: Messageable):
     print("Complete!")
     await send_success_msg(ctx, user_addr, first_nft_id, preview_filename, img_cid, nft_cid)
 
+    # Quickly cleanup the directories
+    shutil.rmtree(unq_img_dir)
+    shutil.rmtree(unq_nft_dir)
+    shutil.rmtree(unq_dat_dir)
+    shutil.rmtree(unq_prv_dir)
+
 @bot.command()
 async def add(ctx: Messageable, username: str):
     """Add a new user. This can only be run by @aoth."""

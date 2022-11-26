@@ -317,6 +317,17 @@ async def send_faq_msg(ctx):
         A lot of the variability depends on how busy the Ethereum network is at the time. \
         Since we are using a testnet, it is extra slow... but at least it is free!\n\
         If none of the above made sense, read below or TL;DR; I am cheap and used free stuff as much as possible.\n\n\
+        **What is rarity?**\n\
+        There are 7 possible rarity levels for your gifts:\n\
+        1. Common\n\
+        2. Uncommon\n\
+        3. Rare\n\
+        4. Legendary\n\
+        5. Mythical\n\
+        6. N-F-Tacular\n\
+        7. Christmas Miracle\n\n\
+        Each rarity level has its unique set of animated frames and set of attributes.\n\n \
+        *My elves usually feel increasingly generous as it gets closer to Christmas!* As a result, every week it becomes more likely to receive higher-tier gifts!\n\n\
         **What is Ethereum?**\n\
         Ethereum is just a big-ol' decentralized computer.\n\
         It sounds fancy to tech people cause it uses a blockchain to maintain its state. \
@@ -371,3 +382,19 @@ async def send_faq_msg(ctx):
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
+async def send_welcome_msg(ctx):
+    embedVar = discord.Embed(
+        title="HO HO HO HO! MERRY CHRISTMAS! Welcome to the 2022 Discord Advent Calendar!",
+        description=f"\
+        Every day in the month of December, my elves will make you a special gift: *4 completely unique NFTs and 0.01 ETH sent to your very own Ethereum (testnet) wallet!*\n\n\
+        My new AI elves have been working hard all year to perfectly generate unique gifts for all the good boys and girls. \
+        Gifts come in a variety of rarity levels and include an assortment of subjects, hats, eyes, scarfs and backgrounds. \
+        With over 1 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!",
+        color=0x00ff00
+    )
+    img_file = discord.File(nft_img, filename=nft_img)
+    embedVar.set_image(url=f"attachment://{nft_img}")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=img_file)
+
