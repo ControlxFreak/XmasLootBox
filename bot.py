@@ -90,7 +90,7 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str
 
     # Check if this username has registered to play and has setup an Ethereum wallet
     if username not in accounts.keys():
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, username)
         raise RuntimeError("No Wallet.")
 
     # ========================== #
@@ -195,6 +195,8 @@ def save_metadata(metadata: Dict[str, str], unq_dat_dir: str, nft_files: List[st
         data_files.append(data_file)
 
     return data_files
+
+def save_preview()
 
 # ============================================ #
 # Commands
@@ -474,7 +476,7 @@ async def address(ctx: Messageable):
     accounts_mutex.release()
 
     if username not in accounts:
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, username)
         return
 
     user_addr = accounts[username]["address"]
@@ -516,7 +518,7 @@ async def nft(ctx: Messageable):
 
     # Check to see that this user exists
     if (username not in owners) or (username not in accounts):
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, username)
         return
 
     # Get all of the CIDs that this owner has
@@ -589,7 +591,7 @@ async def balance(ctx: Messageable):
     accounts_mutex.release()
 
     if username not in accounts:
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, username)
         return
 
     user_addr = accounts[username]["address"]
@@ -612,7 +614,7 @@ async def balanceOf(ctx: Messageable, username: str):
     accounts_mutex.release()
 
     if username not in accounts:
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, username)
         return
 
     user_addr = accounts[username]["address"]
@@ -642,8 +644,13 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
         accounts = json.load(f)
     accounts_mutex.release()
 
+    # Check the accounts exist
     if sender not in accounts:
-        await send_no_wallet_msg(ctx)
+        await send_no_wallet_msg(ctx, sender)
+        return
+
+    if recipient not in accounts:
+        await send_no_wallet_msg(ctx, recipient)
         return
 
     # Get the addresses
@@ -664,10 +671,6 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
         inverse_accounts = {val["address"]: key for key, val in accounts.items()}
         real_owner_name = inverse_accounts[nft_owner]
         await send_not_your_nft_msg(ctx, nft_id, sender_addr, real_owner_name)
-        return
-
-    if recipient not in accounts:
-        await send_no_wallet_msg(ctx)
         return
 
     # Get the addresses

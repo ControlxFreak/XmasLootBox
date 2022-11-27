@@ -5,7 +5,6 @@ import discord
 from table2ascii import table2ascii
 
 from .rarity import get_rarity_color
-from .artists import create_nft_preview
 from .constants import VALID_YEAR, OPENSEA_URL
 
 
@@ -49,15 +48,13 @@ async def send_eoe_msg(ctx):
     # Send the message
     await ctx.channel.send(embed=embedVar, file=santa_rocket_file)
 
-async def send_no_wallet_msg(ctx):
-    """Generate the End of Event message.
-    """
+async def send_no_wallet_msg(ctx, username):
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Sorry {ctx.message.author.name}, You're on the Naughty List!",
+        title=f"Sorry, {username} is on the Naughty List!",
         description="\
         ...Well more accurately, I don't see you on the Nice List.\n\
-        If you would like to play and recieve gifts this year, contact @aoth to be added!\n\
+        If you would like to play and receive gifts this year, contact @aoth to be added!\n\
         Ho Ho Ho Ho!\
         ",
         color=0xff0000
