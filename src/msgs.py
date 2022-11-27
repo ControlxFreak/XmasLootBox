@@ -9,10 +9,10 @@ from .constants import VALID_YEAR, OPENSEA_URL
 
 
 def get_date() -> Tuple[int, int, int]:
-    """Find the current date in ISO format (Year, Week Number, Day Number).
-    """
+    """Find the current date in ISO format (Year, Week Number, Day Number)."""
     # Grab the current week number
     return datetime.date.today().isocalendar()
+
 
 def days_until_christmas(year: int = VALID_YEAR) -> int:
     """Compute the number of days until Christmas."""
@@ -20,13 +20,14 @@ def days_until_christmas(year: int = VALID_YEAR) -> int:
     today = datetime.date.today()
     return (xmas - today).days
 
+
 def generate_christmas_countdown_msg(year: int = VALID_YEAR) -> str:
     """Generate a string that informs you of the number of days until Christmas!"""
     return f"{days_until_christmas(year)} days until Christmas!!!!"
 
+
 async def send_eoe_msg(ctx):
-    """Generate the End of Event message.
-    """
+    """Generate the End of Event message."""
     # Create the embedded message
     embedVar = discord.Embed(
         title=f"Sorry {ctx.message.author.name}, Santa is Broke!",
@@ -40,13 +41,16 @@ async def send_eoe_msg(ctx):
         ```css\n[{generate_christmas_countdown_msg(VALID_YEAR + 1)}]\n```\n\n\
         Checkout this year's Advent Calendar Collection at: [OpenSea]({OPENSEA_URL})\n\
         ",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Attach the image
-    santa_rocket_file = discord.File("assets/msgs/santa_rocket.gif", filename="santa_rocket.gif")
+    santa_rocket_file = discord.File(
+        "assets/msgs/santa_rocket.gif", filename="santa_rocket.gif"
+    )
     embedVar.set_image(url="attachment://santa_rocket.gif")
     # Send the message
     await ctx.channel.send(embed=embedVar, file=santa_rocket_file)
+
 
 async def send_no_wallet_msg(ctx, username):
     # Configure the message
@@ -57,41 +61,44 @@ async def send_no_wallet_msg(ctx, username):
         If you would like to play and receive gifts this year, contact @aoth to be added!\n\
         Ho Ho Ho Ho!\
         ",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Send the message
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_impish_msg(ctx):
     """Sends the impish message!"""
     # Configure the message
     embedVar = discord.Embed(
         title=f"How Impish of you {ctx.message.author.name}!",
-        description=f"\
+        description="\
             ```diff\n-You have already claimed a loot box today...```\n\
             Greed is very impish!\
             If you are admirable, you can check back tomorrow for a new loot box.",
-        color=0xff0000
+        color=0xFF0000,
     )
     impish_file = discord.File("assets/msgs/impish.jpg", filename="impish.jpg")
     embedVar.set_image(url="attachment://impish.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=impish_file)
 
+
 async def send_error_msg(ctx):
     """Sends the erorr message to the user"""
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Well this is embarrassing...",
+        title="Well this is embarrassing...",
         description=f"\
             ```diff\n-An Error Occured Minting the NFTs for {ctx.message.author.name}...```\n\
             Contact @aoth and he will try to fix it or mint it manually for you.",
-        color=0xff0000
+        color=0xFF0000,
     )
     shrug_file = discord.File("assets/msgs/shrug.jpg", filename="shrug.jpg")
     embedVar.set_image(url="attachment://shrug.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=shrug_file)
+
 
 async def send_success_msg(ctx, addr, first_nft_id, preview, img_cid, nft_cid):
     """Send the success message."""
@@ -104,27 +111,29 @@ async def send_success_msg(ctx, addr, first_nft_id, preview, img_cid, nft_cid):
         **Your NFT ID's are: {first_nft_id}, {first_nft_id+1}, {first_nft_id+2}, and {first_nft_id+3}.**\n\
         (It might take ~1 minute to register on OpenSea)\n\
         Here is a small preview:",
-        color=0x00ff00
+        color=0x00FF00,
     )
     prev_file = discord.File(preview, filename=preview)
     embedVar.set_image(url=f"attachment://{preview}")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=prev_file)
 
+
 async def send_not_aoth_msg(ctx):
     """Send the not aoth message for creating new users."""
     # Configure the message
     embedVar = discord.Embed(
         title=f"You Are Not Authorized To Create Accounts, {ctx.message.author.name}!",
-        description=f"\
+        description="\
         I'm sure @aoth would be happy to help. :)\n\
         If you are interested in creating an ethereum address, @aoth can help you with that too!",
-        color=0xff0000
+        color=0xFF0000,
     )
     stop_file = discord.File("assets/msgs/stop.jpg", filename="stop.jpg")
     embedVar.set_image(url="attachment://stop.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=stop_file)
+
 
 async def send_created_msg(ctx, username, addr):
     # Configure the message
@@ -133,12 +142,13 @@ async def send_created_msg(ctx, username, addr):
         description=f"\
         You should be able to collect a loot box right away, @{username}!\n\
         Use the `>help` command to get started.",
-        color=0x00ff00
+        color=0x00FF00,
     )
     santa_file = discord.File("assets/msgs/santa_nft.png", filename="santa_nft.png")
     embedVar.set_image(url="attachment://santa_nft.png")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=santa_file)
+
 
 async def send_addr_msg(ctx, addr):
     """Send the address message for when a user requests it."""
@@ -148,26 +158,28 @@ async def send_addr_msg(ctx, addr):
         description=f"\
         **You can find your collection on [OpenSea](https://testnets.opensea.io/{addr})**\n\
         If you are interested in understanding more about Ethereum addresses, ask @aoth!",
-        color=0x00873E
+        color=0x00873E,
     )
     eth_file = discord.File("assets/msgs/eth.jpg", filename="eth.jpg")
     embedVar.set_image(url="attachment://eth.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=eth_file)
 
+
 async def send_user_has_account(ctx, username, addr):
     """Send the notification that this user already has an account."""
     # Configure the message
     embedVar = discord.Embed(
         title=f"{username} already has an account!\nYour Ethereum address is:\n{addr}",
-        description=f"\
+        description="\
         If you are interested in understanding more about Ethereum addresses, ask @aoth!",
-        color=0x00ff00
+        color=0x00FF00,
     )
     eth_file = discord.File("assets/msgs/eth.jpg", filename="eth.jpg")
     embedVar.set_image(url="attachment://eth.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=eth_file)
+
 
 async def send_admirable_msg(ctx, username, rarity_label, description):
     """Send the notification informing the user their sampled rarity label and description."""
@@ -180,19 +192,24 @@ async def send_admirable_msg(ctx, username, rarity_label, description):
             **Please stand-by while my elves generate your daily gifts!**\n\
             **I hope its value goes to the moon!**🪙🚀\n\
             \n**Generating:**```\n{description}\n```",
-        color=get_rarity_color(rarity_label)
+        color=get_rarity_color(rarity_label),
     )
     lootbox_file = discord.File("assets/msgs/loot-box.gif", filename="loot_box.gif")
     embedVar.set_image(url="attachment://loot_box.gif")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=lootbox_file)
 
+
 async def send_users_msg(ctx, accounts):
     """Send a message to show the usernames and addresses."""
     output = table2ascii(
         header=["Username", "Address", "Collection"],
         body=[
-            [username, acct["address"], f"https://testnets.opensea.io/{acct['address']}"]
+            [
+                username,
+                acct["address"],
+                f"https://testnets.opensea.io/{acct['address']}",
+            ]
             for username, acct in accounts.items()
         ],
     )
@@ -200,59 +217,65 @@ async def send_users_msg(ctx, accounts):
     # Send the message to the channel
     await ctx.send(f"```\n{output}\n```")
 
+
 async def send_no_nfts_msg(ctx):
     # Configure the message
     embedVar = discord.Embed(
         title=f"You Don't have any NFTs, {ctx.message.author.name}!",
-        description=f"Use the !claim command to get your first gift!",
-        color=0xff0000
+        description="Use the !claim command to get your first gift!",
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_nobody_nfts_msg(ctx):
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Nobody has any NFTs yet!",
-        description=f"Use the !claim command to get your first gift!",
-        color=0xff0000
+        title="Nobody has any NFTs yet!",
+        description="Use the !claim command to get your first gift!",
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
 
+
 async def send_nft_msg(ctx, username, nft_img, nft_id, addr):
     embedVar = discord.Embed(
-        title=f"{username} owns this (NFT \# {nft_id})!",
+        title=f"{username} owns this (NFT # {nft_id})!",
         description=f"\
         Checkout their collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
-        color=0x00ff00
+        color=0x00FF00,
     )
     img_file = discord.File(nft_img, filename=nft_img)
     embedVar.set_image(url=f"attachment://{nft_img}")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=img_file)
 
+
 async def send_balance_msg(ctx, username, balance, num_nfts, addr):
     embedVar = discord.Embed(
         title=f"{username} has {balance:.3f} ETH and {num_nfts} NFTs!",
         description=f"\
         Checkout their collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
-        color=0x00ff00
+        color=0x00FF00,
     )
     money_file = discord.File("assets/msgs/money.png", filename="money.png")
     embedVar.set_image(url="attachment://money.png")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=money_file)
 
+
 async def send_nft_dne_msg(ctx, nft_id, addr):
     embedVar = discord.Embed(
         title=f"{ctx.message.author.name}, NFT # {nft_id} Does Not Exist.",
         description=f"\
         Checkout your collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_not_your_nft_msg(ctx, nft_id, sender_addr, nft_owner):
     embedVar = discord.Embed(
@@ -260,10 +283,11 @@ async def send_not_your_nft_msg(ctx, nft_id, sender_addr, nft_owner):
         description=f"\
         NFT # {nft_id} is owned by {nft_owner}.\n\
         Checkout your collection on [OpenSea](https://testnets.opensea.io/{sender_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_transfer_error_msg(ctx, sender, recipient, nft_id):
     embedVar = discord.Embed(
@@ -271,33 +295,38 @@ async def send_transfer_error_msg(ctx, sender, recipient, nft_id):
         description=f"\
         This most likely occurred due to a lack of funds in {sender}'s account.\n\
         Check your funds using the !balance command.",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
 
-async def send_transfer_success_msg(ctx, sender, recipient, nft_id, sender_addr, recipient_addr):
+
+async def send_transfer_success_msg(
+    ctx, sender, recipient, nft_id, sender_addr, recipient_addr
+):
     embedVar = discord.Embed(
         title=f"Successfully transferred NFT # {nft_id} from {sender} to {recipient}!",
         description=f"\
         Checkout your new collections:\n\
         [{sender}](https://testnets.opensea.io/{sender_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)\n\
         [{recipient}](https://testnets.opensea.io/{recipient_addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false)",
-        color=0x00ff00
+        color=0x00FF00,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
 
+
 async def send_transfer_conf_msg(ctx, sender, recipient, nft_id):
     embedVar = discord.Embed(
         title=f"Sending NFT # {nft_id} as a gift from {sender} to {recipient}...",
-        description=f"\
+        description="\
         My elves are flying the payload over now!\n\
         This might take 30s - 1min depending on network traffic.",
-        color=0x00ff00
+        color=0x00FF00,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_faq_msg(ctx):
     embedVar = discord.Embed(
@@ -342,7 +371,7 @@ async def send_faq_msg(ctx):
         This becomes cryptographically secured in such a manner that *the proof of ownership* cannot be duplicated (of course the image can be duplicated, but no one else can prove they own it is the idea). \
         People are now using NFTs to sell houses and stuff, it doesn't have to be cat images. \
         [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)",
-        color=0x0000ff
+        color=0x0000FF,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
@@ -375,10 +404,11 @@ async def send_faq_msg(ctx):
         If you care, we are using the [Goerli testnet](https://goerli.net/). There are others, but this is the best IMO.\n\n\
         **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
         Great question. 🤷‍♂️ I needed something to do when Katelyn was asleep and I missed coding.\n",
-        color=0x0000ff
+        color=0x0000FF,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
 
 async def send_welcome_msg(ctx):
     embedVar = discord.Embed(
@@ -391,19 +421,20 @@ async def send_welcome_msg(ctx):
         If you impress, @SantaBot he will add you to the game!*\n\n\
         *Once you have been added, use the !claim command to claim your daily gift!*\n\n\
         Throughout the month, we can see our collection grow on [OpenSea]({OPENSEA_URL})!\n\n",
-        color=0xc54245
+        color=0xC54245,
     )
     preview_file = discord.File("assets/example/preview.gif", filename="preview.gif")
     embedVar.set_image(url="attachment://preview.gif")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=preview_file)
 
+
 async def send_invalid_username(ctx, username):
     embedVar = discord.Embed(
         title=f"Cannot create account for: {username}.",
         description="This user is neither on my naughty nor nice list!\n\n\
         Double check the spelling and be sure to use their *actual* name (not the server nickname and do not include the numbers).",
-        color=0xff0000
+        color=0xFF0000,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)

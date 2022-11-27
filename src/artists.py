@@ -7,6 +7,7 @@ from .constants import FRAME_DIR
 
 IMG_WIDTH, IMG_HEIGHT = 256, 256
 
+
 def get_frame_offset(frame_name: str) -> int:
     """Get an offset padding based on the frame."""
     if frame_name in [None, "speedlines", "rain_of_gold"]:
@@ -42,16 +43,18 @@ def add_frame(image: Image, frame_name: str) -> List[ImgType]:
         offset = get_frame_offset(frame_name)
 
         # Create the base background image and paste the desired image ontop
-        base_layer = Image.new(mode="RGB", size=(IMG_WIDTH + offset, IMG_HEIGHT + offset))
-        base_layer.paste(image, (offset//2, offset//2))
+        base_layer = Image.new(
+            mode="RGB", size=(IMG_WIDTH + offset, IMG_HEIGHT + offset)
+        )
+        base_layer.paste(image, (offset // 2, offset // 2))
 
         # Break apart the frame gif, paste it ontop of the base image, and reconstruct it in a list
         try:
             while 1:
                 # Get the next frame, resize it, and add an alpha layer
-                frame_gif.seek(frame_gif.tell()+1)
+                frame_gif.seek(frame_gif.tell() + 1)
                 frame_img = frame_gif.resize((IMG_WIDTH + offset, IMG_HEIGHT + offset))
-                frame_img = frame_img.convert('RGBA')
+                frame_img = frame_img.convert("RGBA")
 
                 # Copy the base layer image
                 temp_img = base_layer.copy()
@@ -61,10 +64,11 @@ def add_frame(image: Image, frame_name: str) -> List[ImgType]:
                 # Add this frame to the output list
                 output_images.append(temp_img.copy())
         except EOFError:
-            pass # end of sequence
+            pass  # end of sequence
 
     # Return the output gif images
     return output_images
+
 
 def create_img_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[ImgType]:
     """Creates a 4x4 preview of your NFTs using the first image frame of the gif.
@@ -76,15 +80,18 @@ def create_img_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[I
     offset = get_frame_offset(frame_name)
 
     # Construct a base image
-    preview = Image.new(mode="RGB", size=(2 * (IMG_WIDTH + offset), 2 * (IMG_HEIGHT + offset)))
+    preview = Image.new(
+        mode="RGB", size=(2 * (IMG_WIDTH + offset), 2 * (IMG_HEIGHT + offset))
+    )
 
     # Paste each image onto the base layer
     preview.paste(prev_imgs[0], (0, 0))
-    preview.paste(prev_imgs[1], (IMG_WIDTH+offset, 0))
-    preview.paste(prev_imgs[2], (0, IMG_HEIGHT+offset))
-    preview.paste(prev_imgs[3], (IMG_WIDTH+offset, IMG_HEIGHT+offset))
+    preview.paste(prev_imgs[1], (IMG_WIDTH + offset, 0))
+    preview.paste(prev_imgs[2], (0, IMG_HEIGHT + offset))
+    preview.paste(prev_imgs[3], (IMG_WIDTH + offset, IMG_HEIGHT + offset))
 
     return preview
+
 
 def create_nft_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[ImgType]:
     """Creates a 4x4 preview of your NFTs.
@@ -94,7 +101,7 @@ def create_nft_preview(nft_imgs: List[List[ImgType]], frame_name: str) -> List[I
     # We will make it half the size to fit in the discord message
     offset = get_frame_offset(frame_name)
     width = (IMG_WIDTH + offset) // 2
-    height =  (IMG_HEIGHT + offset) // 2
+    height = (IMG_HEIGHT + offset) // 2
     base_preview = Image.new(mode="RGB", size=(2 * width, 2 * height))
 
     # Get the number of frames

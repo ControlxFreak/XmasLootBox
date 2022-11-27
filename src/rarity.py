@@ -4,6 +4,7 @@ import numpy as np
 from scipy.stats import poisson
 import random
 
+
 def get_rarity_labels() -> List[str]:
     """Get the list of rarity labels."""
     return [
@@ -13,45 +14,50 @@ def get_rarity_labels() -> List[str]:
         "legendary",
         "mythical",
         "n-f-tacular",
-        "christmas miracle"
+        "christmas miracle",
     ]
+
 
 def rarity_label_to_level(rarity_label: str) -> int:
     """Convert a rarity label string to an integer level."""
     rarity_labels = get_rarity_labels()
-    label_map = {f"{s}":i for i, s in enumerate(rarity_labels)}
+    label_map = {f"{s}": i for i, s in enumerate(rarity_labels)}
     return label_map[rarity_label.lower()]
+
 
 def rarity_level_to_label(rarity_level: int) -> str:
     """Convert a rarity level integer to an rarity label."""
     rarity_labels = get_rarity_labels()
     return rarity_labels[rarity_level]
 
+
 def get_rarity_color(rarity_label: str) -> hex:
     """Convert a rarity label string to its corresponding hex color."""
     color_map = {
-        "common": 0x808080,     # Grey
-        "uncommon": 0x00873E,   # Green
-        "rare": 0x6777FF,       # Blue
+        "common": 0x808080,  # Grey
+        "uncommon": 0x00873E,  # Green
+        "rare": 0x6777FF,  # Blue
         "legendary": 0xA020F0,  # Purple
-        "mythical": 0xFFFF00,   # Yellow
-        "n-f-tacular": 0xFFA500,# Orange
-        "christmas miracle": 0xc54245, # Christmas Red
+        "mythical": 0xFFFF00,  # Yellow
+        "n-f-tacular": 0xFFA500,  # Orange
+        "christmas miracle": 0xC54245,  # Christmas Red
     }
     return color_map[rarity_label]
+
 
 def get_frame_names(rarity_label: str) -> Dict[str, List[Optional[str]]]:
     """Get a dictionary of frames keyed by the rarity label."""
     frame_map = {
         "common": [None],
-        "uncommon": ["portal_blue","portal_orange"],
+        "uncommon": ["portal_blue", "portal_orange"],
         "rare": ["darkage_red", "darkage_blue"],
         "legendary": ["darkage_rgb", "glitch_unstable"],
         "mythical": ["glitch_neon", "neon_frame", "glitch_wave"],
         "n-f-tacular": ["speedlines", "rain_of_gold", "cat_crime_graffiti"],
-        "christmas miracle": ["christmas_lights"]
+        "christmas miracle": ["christmas_lights"],
     }
     return frame_map[rarity_label.lower()]
+
 
 def get_subjects(rarity_level: int) -> List[str]:
     """Get the list of subjects available to be sampled at a given rarity level."""
@@ -80,9 +86,11 @@ def get_subjects(rarity_level: int) -> List[str]:
     # Must be christmas miracle
     return subjects
 
+
 def get_ages() -> List[Optional[str]]:
     """Get the list of possible ages."""
     return [None, "baby", "young", "old"]
+
 
 def get_hats(rarity_level: int) -> List[Optional[str]]:
     """Get the list of hats available to be sampled at a given rarity level."""
@@ -93,19 +101,20 @@ def get_hats(rarity_level: int) -> List[Optional[str]]:
         "beanie",
         "robot head",
         "santa hat",
-        "party hat"
+        "party hat",
     ]
 
     if rarity_level < 5:
         # Must be < N-F-Tacular
         return hats[:2]
-    
+
     if rarity_level < 6:
         # Must be < Christmas Miracle
         return hats[:4]
-    
+
     # Must be Christmas Miracle
     return hats
+
 
 def get_eyes(rarity_level: int) -> List[str]:
     """Get the list of eyes available to be sampled at a given rarity level."""
@@ -122,23 +131,24 @@ def get_eyes(rarity_level: int) -> List[str]:
         "fire",
         "sunglasses",
         "laser beam",
-        "pepermint"
+        "pepermint",
     ]
 
     if rarity_level < 4:
         # Must be < Mythical
         return eyes[:4]
-    
+
     if rarity_level < 5:
         # Must be < N-F-Tacular
         return eyes[:7]
-    
+
     if rarity_level < 6:
         # Must be < Christmas Miracle
         return eyes[:11]
-    
+
     # Must be Christmas Miracle
     return eyes
+
 
 def get_scarfs(rarity_level: int) -> List[Optional[str]]:
     """Get the list of scarfs available to be sampled at a given rarity level."""
@@ -154,12 +164,12 @@ def get_scarfs(rarity_level: int) -> List[Optional[str]]:
         "rgb",
         "rainbow",
         "fire",
-        "pepermint"
+        "pepermint",
     ]
     if rarity_level < 4:
         # Must be < Mythical
         return scarfs[:5]
-    
+
     if rarity_level < 5:
         # Must be < N-F-Tacular
         return scarfs[:8]
@@ -171,6 +181,7 @@ def get_scarfs(rarity_level: int) -> List[Optional[str]]:
     # Must be Christmas Miracle
     return scarfs
 
+
 def get_backgrounds(rarity_level: int) -> List[str]:
     """Get the list of backgrounds available to be sampled at a given rarity level."""
     backgorunds = [
@@ -179,7 +190,7 @@ def get_backgrounds(rarity_level: int) -> List[str]:
         "space",
         "fireplace",
         "christmas tree",
-        "north pole"
+        "north pole",
     ]
     if rarity_level < 6:
         # Must be < Christmas Miracle
@@ -187,11 +198,13 @@ def get_backgrounds(rarity_level: int) -> List[str]:
     # Must be Christmas Miracle
     return backgorunds
 
+
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
     return ["realistic", "toon", "meme", "NFT", "pixel"]
 
-def sample_rarity_label(week_num : int) -> str:
+
+def sample_rarity_label(week_num: int) -> str:
     """Sample a rarity label based on the PMF for this week!
 
     The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
@@ -214,13 +227,14 @@ def sample_rarity_label(week_num : int) -> str:
     rarity_level = np.flatnonzero(samples)[0]
     return rarity_level_to_label(rarity_level)
 
+
 def sample_rarity_label_uniform() -> str:
-    """Sample a rarity label according to a uniform distribution.
-    """
+    """Sample a rarity label according to a uniform distribution."""
     # Grab the labels and IDs
     rarity_labels = get_rarity_labels()
-    p = [1/48, 2/48, 2/48, 6/48, 12/48, 12/48, 13/48]
+    p = [1 / 48, 2 / 48, 2 / 48, 6 / 48, 12 / 48, 12 / 48, 13 / 48]
     return np.random.choice(rarity_labels, p=p)
+
 
 def sample_attributes(rarity_label: str) -> Dict[str, str]:
     """Sample the attributes based on the rarity level."""
@@ -270,9 +284,11 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
 
     return attributes
 
+
 def sample_frame(rarity_label: str) -> str:
     """Sample a frame at this rarity level with equal probabilities."""
     fram_names = get_frame_names(rarity_label)
     return random.choice(fram_names)
+
 
 # %%

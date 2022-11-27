@@ -6,3 +6,5 @@ numpy
 scipy
 web3
 table2ascii
+black
+flake8

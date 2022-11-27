@@ -4,15 +4,18 @@ from PIL import Image
 from PIL.Image import Image as ImgType
 from dalle2 import Dalle2
 
-from .constants import *
+from .constants import ASSET_DIR
 
-def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> Tuple[List[ImgType], List[str]]:
+
+def generate_dalle_art(
+    dalle: Dalle2, description: str, img_dir: str
+) -> Tuple[List[ImgType], List[str]]:
     """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
 
     DO NOT CALL WITH `sim=True` UNTIL YOU ARE READY!! IT WILL COST MONEY!!!
     """
     # Generate and download new Dalle2 images
-    img_files = dalle.generate_and_download(description,image_dir=img_dir)
+    img_files = dalle.generate_and_download(description, image_dir=img_dir)
     images = []
     for img_file in img_files:
         images.append(Image.open(img_file))
@@ -20,22 +23,25 @@ def generate_dalle_art(dalle : Dalle2, description: str, img_dir: str) -> Tuple[
     # Return the list of images
     return images, img_files
 
-def generate_example_art(unq_img_dir: str, first_nft_id: int) -> Tuple[List[ImgType], List[str]]:
+
+def generate_example_art(
+    unq_img_dir: str, first_nft_id: int
+) -> Tuple[List[ImgType], List[str]]:
     """Just generate some example artwork for testing."""
     # Load the example images
     images = [
-        Image.open(os.path.join(ASSET_DIR, f"example/{i}.png")) for i in range(1,5)
+        Image.open(os.path.join(ASSET_DIR, f"example/{i}.png")) for i in range(1, 5)
     ]
     # Copy them into the correct location so they can be uploaded
     img_files = [
-        os.path.join(unq_img_dir, f"{first_nft_id + idx}.png")
-        for idx in range(4)
+        os.path.join(unq_img_dir, f"{first_nft_id + idx}.png") for idx in range(4)
     ]
     _ = [img.save(img_file) for img, img_file in zip(images, img_files)]
 
     return images, img_files
 
-def generate_dalle_description(attributes: Dict[str, str])->str:
+
+def generate_dalle_description(attributes: Dict[str, str]) -> str:
     """Generate the dalle description from the attributes."""
     # ======================================== #
     # Begin with the age
@@ -93,7 +99,6 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
     s += attributes["background"]
     s += " background, "
 
-
     # ======================================== #
     # Add the style
     s += "drawn in a "
@@ -102,7 +107,10 @@ def generate_dalle_description(attributes: Dict[str, str])->str:
 
     return s
 
-def generate_erc721_metadata(attributes: Dict[str, str], description: str) -> Dict[str, str]:
+
+def generate_erc721_metadata(
+    attributes: Dict[str, str], description: str
+) -> Dict[str, str]:
     """Generate a dictionary that complies with the ERC721 metadata standard."""
     metadata = {
         "name": "Xmas Lootbox Reward # {0}",
