@@ -32,13 +32,12 @@ async def send_eoe_msg(ctx):
     embedVar = discord.Embed(
         title=f"Sorry {ctx.message.author.name}, Santa is Broke!",
         description=f"\
-        Santa cannot afford loot boxes at the moment...\n \
-        ```yaml\nBut never fear children, I invested all of my savings for next year's gifts into Dodge coin!\n```\
-        Elon says it will moon by next Christmas, so I'll be a billionaire!\n\
+        Santa cannot afford gifts at the moment...\n \
+        ```yaml\nBut never fear children, I invested all of my savings for next year's gifts into Doge coin!\n```\n\
+        Elon says it will moon by next Christmas, so I'll be a billionaire! \
         *...if not, Mrs. Claus will be PISSSSSSED...*\n\n\
-        Keep being admirable and check back next year for more fat gains!\
-        Ho Ho Ho!\n\n\
-        ```css\n[{generate_christmas_countdown_msg(VALID_YEAR + 1)}]\n```\n\n\
+        Keep being admirable and check back next year! Ho Ho Ho!\n\n\
+        ```css\n[{generate_christmas_countdown_msg(VALID_YEAR + 1)}]\n```\n\
         Checkout this year's Advent Calendar Collection at: [OpenSea]({OPENSEA_URL})\n\
         ",
         color=0xFF0000,
@@ -82,22 +81,6 @@ async def send_impish_msg(ctx):
     embedVar.set_image(url="attachment://impish.jpg")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=impish_file)
-
-
-async def send_error_msg(ctx):
-    """Sends the erorr message to the user"""
-    # Configure the message
-    embedVar = discord.Embed(
-        title="Well this is embarrassing...",
-        description=f"\
-            ```diff\n-An Error Occured Minting the NFTs for {ctx.message.author.name}...```\n\
-            Contact @aoth and he will try to fix it or mint it manually for you.",
-        color=0xFF0000,
-    )
-    shrug_file = discord.File("assets/msgs/shrug.jpg", filename="shrug.jpg")
-    embedVar.set_image(url="attachment://shrug.jpg")
-    # Send the message to the channel
-    await ctx.channel.send(embed=embedVar, file=shrug_file)
 
 
 async def send_success_msg(ctx, addr, first_nft_id, preview, img_cid, nft_cid):
@@ -203,12 +186,11 @@ async def send_admirable_msg(ctx, username, rarity_label, description):
 async def send_users_msg(ctx, accounts):
     """Send a message to show the usernames and addresses."""
     output = table2ascii(
-        header=["Username", "Address", "Collection"],
+        header=["Username", "Address"],
         body=[
             [
                 username,
                 acct["address"],
-                f"https://testnets.opensea.io/{acct['address']}",
             ]
             for username, acct in accounts.items()
         ],
@@ -416,7 +398,7 @@ async def send_welcome_msg(ctx):
         description=f"\
         Every day in the month of December, my elves will make you a special gift:\n\n*4 completely unique NFTs and 0.01 ETH!*\n\n\
         My new AI elves have been working hard all year to perfectly generate unique gifts, spanning a variety of rarity levels and an assortment of subjects, hats, eyes, scarfs and backgrounds. \
-        With over 1 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!\n\n\
+        With over 14 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!\n\n\
         *To get started, write @SantaBot a Christmas message asking to join!* \
         If you impress, @SantaBot he will add you to the game!*\n\n\
         *Once you have been added, use the !claim command to claim your daily gift!*\n\n\
@@ -438,3 +420,62 @@ async def send_invalid_username(ctx, username):
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
+
+
+async def send_error(ctx):
+    embedVar = discord.Embed(
+        title="Oh No! My Elves are Broken...",
+        description="It looks like my AI elves have broken their hands during the hot coco races, meaning they cannot draw any gifts!\n\n\
+        Contact @aoth and tell him to fix this immediately.",
+        color=0xFF0000,
+    )
+    elf_file = discord.File("assets/msgs/broken_elf.png", filename="broken_elf.png")
+    embedVar.set_image(url="attachment://broken_elf.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_mint_error(ctx):
+    embedVar = discord.Embed(
+        title="Oh No! My Reindeer are Broken...",
+        description="It looks like my reindeer are sick, meaning they cannot deliver your gift!\n\n\
+        Contact @aoth and tell him to fix this immediately.",
+        color=0xFF0000,
+    )
+    elf_file = discord.File(
+        "assets/msgs/sick_reindeer.png", filename="sick_reindeer.png"
+    )
+    embedVar.set_image(url="attachment://sick_reindeer.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_daily_eth_error(ctx):
+    embedVar = discord.Embed(
+        title="Santa's been hacked!",
+        description="I never should have trusted that shady elf on ChristmasFans...\n\n\
+        Now I have no more ETH to give to the admirable...\n\n\
+        Contact @aoth and tell him to fix this immediately.",
+        color=0xFF0000,
+    )
+    elf_file = discord.File("assets/msgs/santa_hacker.png", filename="santa_hacker.png")
+    embedVar.set_image(url="attachment://santa_hacker.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_all_balances_msg(ctx, bals):
+    output = table2ascii(
+        header=["Username", "ETH", "NFTs"],
+        body=[
+            [
+                username,
+                f"{bal['eth']:.3f}",
+                bal["nft"],
+            ]
+            for username, bal in bals.items()
+        ],
+    )
+
+    # Send the message to the channel
+    await ctx.send(f"```\n{output}\n```")

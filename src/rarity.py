@@ -131,7 +131,7 @@ def get_eyes(rarity_level: int) -> List[str]:
         "fire",
         "sunglasses",
         "laser beam",
-        "pepermint",
+        "peppermint",
     ]
 
     if rarity_level < 4:
@@ -164,7 +164,7 @@ def get_scarfs(rarity_level: int) -> List[Optional[str]]:
         "rgb",
         "rainbow",
         "fire",
-        "pepermint",
+        "peppermint",
     ]
     if rarity_level < 4:
         # Must be < Mythical
@@ -180,6 +180,38 @@ def get_scarfs(rarity_level: int) -> List[Optional[str]]:
 
     # Must be Christmas Miracle
     return scarfs
+
+
+def get_sweaters(rarity_level: int) -> List[Optional[str]]:
+    """Get the list of sweaters available to be sampled at a given rarity level."""
+    sweaters = [
+        None,
+        "white",
+        "black",
+        "blue",
+        "brown",
+        "green",
+        "purple",
+        "neon",
+        "rgb",
+        "rainbow",
+        "fire",
+        "peppermint",
+    ]
+    if rarity_level < 4:
+        # Must be < Mythical
+        return sweaters[:5]
+
+    if rarity_level < 5:
+        # Must be < N-F-Tacular
+        return sweaters[:8]
+
+    if rarity_level < 6:
+        # Must be < Christmas Miracle
+        return sweaters[:-1]
+
+    # Must be Christmas Miracle
+    return sweaters
 
 
 def get_backgrounds(rarity_level: int) -> List[str]:
@@ -201,7 +233,7 @@ def get_backgrounds(rarity_level: int) -> List[str]:
 
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
-    return ["realistic", "toon", "meme", "NFT", "pixel"]
+    return ["realistic", "cartoon", "NFT", "pixel"]
 
 
 def sample_rarity_label(week_num: int) -> str:
@@ -271,6 +303,11 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
     scarfs = get_scarfs(rarity_level)
     scarf = random.choice(scarfs)
     attributes["scarf"] = scarf
+
+    # Sample the sweater
+    sweaters = get_sweaters(rarity_level)
+    sweater = random.choice(sweaters)
+    attributes["sweater"] = sweater
 
     # Sample the background
     backgrounds = get_backgrounds(rarity_level)

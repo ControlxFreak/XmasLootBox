@@ -32,9 +32,13 @@ from src.msgs import (
     get_date,
     send_addr_msg,
     send_admirable_msg,
+    send_all_balances_msg,
     send_balance_msg,
     send_created_msg,
     send_eoe_msg,
+    send_error,
+    send_daily_eth_error,
+    send_mint_error,
     send_faq_msg,
     send_impish_msg,
     send_invalid_username,
@@ -89,14 +93,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 help_command = commands.DefaultHelpCommand(no_category="Commands")
-bot_description = "\
-Merry Christmas! Welcome to the 2022 Discord Christmas NFT Loot Box Advent Calendar!\n\n\
-Every day in the month of December, users will be able to interact with @SantaBot to claim a special gift: a completely unique (and real) NFT that will be minted to the Ethereum Goerli testnet and be placed in your very own Ethereum wallet! \
-Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images. \
-Each NFT will be randomly generated with different attributes and rarity levels. \
-Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds. \
-With over 1,249,248 possibilities, there is sure to be something for everyone!\n\n\n\
-To claim your first gift, use the command: !claim"
+bot_description = "To be added to the game, contact @aoth.\n\n\
+                   To claim a gift, use the command: !claim"
 bot = commands.Bot(
     command_prefix="!",
     description=bot_description,
@@ -279,156 +277,174 @@ async def claim(ctx: Messageable):
     users = await user_check(ctx, username, day_hash)
     user_addr = users[username]["address"]
 
-    # ============================================ #
-    # Setup the unique directory structure
-    # ============================================ #
-    first_nft_id, unq_img_dir, unq_nft_dir, unq_dat_dir, unq_prv_dir = make_uniq_dirs()
-
-    # ============================================ #
-    # Sampling
-    # ============================================ #
-    print("Sampling the rarity and attributes...")
-    # Sample the rarity level
-    if SIM_FLAG:
-        rarity_label = sample_rarity_label_uniform()
-    else:
-        rarity_label = sample_rarity_label(week_num)
-
-    # Sample the metadata
-    attributes = sample_attributes(rarity_label)
-
-    # Structure the text string
-    description = generate_dalle_description(attributes)
-
-    # Send the admirable message
-    await send_admirable_msg(ctx, username, rarity_label, description)
-
-    # ============================================ #
-    # Image Generation
-    # ============================================ #
-    # Generate the artwork
-    print("Generating the artwork...")
-    if SIM_FLAG:
-        # Generate some example art so we don't have to query Dalle
-        images, img_files = generate_example_art(unq_img_dir, first_nft_id)
-    else:
-        # Generate the art using Dalle
-        images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
-
-    # Sample the frame
-    frame_name = sample_frame(rarity_label)
-
-    # ============================================ #
-    # NFT Generation
-    # ============================================ #
-    num_imgs = len(images)  # This should always be 4 according to dalle...
-    nft_files = [
-        os.path.join(unq_nft_dir, f"{first_nft_id + idx}.gif")
-        for idx in range(num_imgs)
-    ]
-
-    # Add the frame to each image and then save them
-    # Spawn these in multiple threads since this can be done asynchronously and is slow
-    print(f"Adding frames to the NFTs ({first_nft_id})...")
-    nft_imgs = [res for res in executor.map(add_frame, images, num_imgs * [frame_name])]
-
-    print(f"Saving the NFTs ({first_nft_id})...")
-    _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
-
-    # ============================================ #
-    # Metadata Generation
-    # ============================================ #
-    # Generate the ERC721-compliant metadata json
-    metadata = generate_erc721_metadata(attributes, description)
-
-    # ============================================ #
-    # Web3
-    # ============================================ #
-    # Pin the images to IPFS
-    img_cid = await pin_to_ipfs(img_files)
-    print(f"IMG URI: {img_cid}")
-
-    # Pin the nfts to IPFS
-    nft_cid = await pin_to_ipfs(nft_files)
-    nft_base_uri = f"ipfs://{nft_cid}/"
-    print(f"NFT URI: {nft_base_uri}")
-
-    # Create the metadata jsons
-    metadata_files = save_metadata(metadata, unq_dat_dir, nft_files, nft_base_uri)
-
-    # Pin the metadata to IPFS
-    data_cid = await pin_to_ipfs(metadata_files)
-    data_base_uri = f"ipfs://{data_cid}/"
-    print(f"Data URI: {data_base_uri}")
-
-    # Get the data uris
-    data_uris = []
-    for data_file in metadata_files:
-        data_basename = os.path.basename(data_file)
-        data_uris.append(data_base_uri + data_basename)
-
-    # Update the owner's list
-    print("Updating the owners list...")
-    owners_mutex.acquire()
-    with open("owners.json", "r") as f:
-        owners = json.load(f)
-
-    owners[username].append(
-        {
-            "img": img_cid,
-            "nft": nft_cid,
-            "data": data_cid,
-            "ids": [first_nft_id + i for i in range(4)],
-        }
-    )
-
-    shutil.copyfile("owners.json", "/tmp/owners.json")
     try:
-        with open("owners.json", "w") as f:
-            json.dump(owners, f)
-    except Exception as exc:
-        shutil.copyfile("/tmp/owners.json", "owners.json")
-        raise exc
+        # ============================================ #
+        # Setup the unique directory structure
+        # ============================================ #
+        (
+            first_nft_id,
+            unq_img_dir,
+            unq_nft_dir,
+            unq_dat_dir,
+            unq_prv_dir,
+        ) = make_uniq_dirs()
 
-    owners_mutex.release()
+        # ============================================ #
+        # Sampling
+        # ============================================ #
+        print("Sampling the rarity and attributes...")
+        # Sample the rarity level
+        if SIM_FLAG:
+            rarity_label = sample_rarity_label_uniform()
+        else:
+            rarity_label = sample_rarity_label(week_num)
 
-    print("Minting NFTs...")
-    if not SIM_FLAG:
-        _ = await mint_nfts(user_addr, data_uris)
-        # TODO: Check if result worked or not
+        # Sample the metadata
+        attributes = sample_attributes(rarity_label)
 
-    # =============================== #
-    # Send 0.010 eth to get started
-    # =============================== #
-    print("Sending eth...")
-    if not SIM_FLAG:
-        _ = await send_daily_eth(user_addr)
-        # TODO: Check if this worked or not
+        # Structure the text string
+        description = generate_dalle_description(attributes)
 
-    # Create the preview image
-    print("Creating Preview...")
-    preview = create_nft_preview(nft_imgs, frame_name)
-    preview_filename = os.path.join(unq_prv_dir, "preview.gif")
-    preview[0].save(
-        preview_filename,
-        save_all=True,
-        append_images=preview[1:],
-        optimize=True,
-        duration=10,
-        loop=0,
-    )
+        # Send the admirable message
+        await send_admirable_msg(ctx, username, rarity_label, description)
 
-    # Send a message to the new owner with images of their new NFTs!
-    print("Complete!")
-    await send_success_msg(
-        ctx, user_addr, first_nft_id, preview_filename, img_cid, nft_cid
-    )
+        # ============================================ #
+        # Image Generation
+        # ============================================ #
+        # Generate the artwork
+        print("Generating the artwork...")
+        if SIM_FLAG:
+            # Generate some example art so we don't have to query Dalle
+            images, img_files = generate_example_art(unq_img_dir, first_nft_id)
+        else:
+            # Generate the art using Dalle
+            images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
 
-    # Quickly cleanup the directories
-    shutil.rmtree(unq_img_dir)
-    shutil.rmtree(unq_nft_dir)
-    shutil.rmtree(unq_dat_dir)
-    shutil.rmtree(unq_prv_dir)
+            if images is None or img_files is None:
+                await send_error(ctx)
+                raise RuntimeError("Dalle Error")
+
+        # Sample the frame
+        frame_name = sample_frame(rarity_label)
+
+        # ============================================ #
+        # NFT Generation
+        # ============================================ #
+        num_imgs = len(images)  # This should always be 4 according to dalle...
+        nft_files = [
+            os.path.join(unq_nft_dir, f"{first_nft_id + idx}.gif")
+            for idx in range(num_imgs)
+        ]
+
+        # Add the frame to each image and then save them
+        # Spawn these in multiple threads since this can be done asynchronously and is slow
+        print(f"Adding frames to the NFTs ({first_nft_id})...")
+        nft_imgs = [
+            res for res in executor.map(add_frame, images, num_imgs * [frame_name])
+        ]
+
+        print(f"Saving the NFTs ({first_nft_id})...")
+        _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
+
+        # ============================================ #
+        # Metadata Generation
+        # ============================================ #
+        # Generate the ERC721-compliant metadata json
+        metadata = generate_erc721_metadata(attributes, description)
+
+        # ============================================ #
+        # Web3
+        # ============================================ #
+        # Pin the images to IPFS
+        img_cid = await pin_to_ipfs(img_files)
+        print(f"IMG URI: {img_cid}")
+
+        # Pin the nfts to IPFS
+        nft_cid = await pin_to_ipfs(nft_files)
+        nft_base_uri = f"ipfs://{nft_cid}/"
+        print(f"NFT URI: {nft_base_uri}")
+
+        # Create the metadata jsons
+        metadata_files = save_metadata(metadata, unq_dat_dir, nft_files, nft_base_uri)
+
+        # Pin the metadata to IPFS
+        data_cid = await pin_to_ipfs(metadata_files)
+        data_base_uri = f"ipfs://{data_cid}/"
+        print(f"Data URI: {data_base_uri}")
+
+        # Get the data uris
+        data_uris = []
+        for data_file in metadata_files:
+            data_basename = os.path.basename(data_file)
+            data_uris.append(data_base_uri + data_basename)
+
+        # Update the owner's list
+        print("Updating the owners list...")
+        owners_mutex.acquire()
+        with open("owners.json", "r") as f:
+            owners = json.load(f)
+
+        owners[username].append(
+            {
+                "img": img_cid,
+                "nft": nft_cid,
+                "data": data_cid,
+                "ids": [first_nft_id + i for i in range(4)],
+            }
+        )
+
+        shutil.copyfile("owners.json", "/tmp/owners.json")
+        try:
+            with open("owners.json", "w") as f:
+                json.dump(owners, f)
+        except Exception as exc:
+            shutil.copyfile("/tmp/owners.json", "owners.json")
+            raise exc
+
+        owners_mutex.release()
+
+        print("Minting NFTs...")
+        if not SIM_FLAG:
+            res = await mint_nfts(user_addr, data_uris)
+            if not res:
+                await send_mint_error(ctx)
+                raise RuntimeError("Mint Error")
+
+        # =============================== #
+        # Send 0.010 eth to get started
+        # =============================== #
+        print("Sending eth...")
+        if not SIM_FLAG:
+            res = await send_daily_eth(user_addr)
+            if not res:
+                # If we ran out of eth or it didn't work for some reason... this function should still continue
+                await send_daily_eth_error(ctx)
+
+        # Create the preview image
+        print("Creating Preview...")
+        preview = create_nft_preview(nft_imgs, frame_name)
+        preview_filename = os.path.join(unq_prv_dir, "preview.gif")
+        preview[0].save(
+            preview_filename,
+            save_all=True,
+            append_images=preview[1:],
+            optimize=True,
+            duration=10,
+            loop=0,
+        )
+
+        # Send a message to the new owner with images of their new NFTs!
+        print("Complete!")
+        await send_success_msg(
+            ctx, user_addr, first_nft_id, preview_filename, img_cid, nft_cid
+        )
+
+    finally:
+        # Quickly cleanup the directories
+        shutil.rmtree(unq_img_dir)
+        shutil.rmtree(unq_nft_dir)
+        shutil.rmtree(unq_dat_dir)
+        shutil.rmtree(unq_prv_dir)
 
 
 @bot.command()
@@ -700,6 +716,26 @@ async def balanceOf(ctx: Messageable, username: str):
 
 
 @bot.command()
+async def allBalances(ctx: Messageable):
+    """Display everyone's ethereum and NFTs balance."""
+    # Get the accounts
+    accounts_mutex.acquire()
+    with open("accounts.json", "r") as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    bals = {}
+    for username, keys in accounts.items():
+        # Get the balances
+        user_addr = keys["address"]
+        eth_balance, nft_balance = await get_balance(user_addr)
+        bals[username] = {"eth": eth_balance, "nft": nft_balance}
+
+    # Format the message
+    await send_all_balances_msg(ctx, bals)
+
+
+@bot.command()
 async def gift(ctx: Messageable, recipient: str, nft_id: int):
     """Randomly send one of your NFTs to a user!
 
@@ -773,13 +809,7 @@ async def faq(ctx: Messageable):
 
 @bot.command()
 async def welcome(ctx: Messageable):
-    """Send the welcome message. Only @aoth can send this."""
-    # Make sure that the only user that is allowed to call this is me
-    caller = (ctx.message.author.name).lower()
-
-    if caller.lower() != "aoth":
-        return
-
+    """Send the welcome message."""
     await send_welcome_msg(ctx)
 
 

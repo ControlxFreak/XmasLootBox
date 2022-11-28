@@ -8,7 +8,7 @@ Every day in the month of December, users will be able to interact with the Disc
 Every gift's artwork will be procedurally generated and created by an AI program (Dalle-2) that translates natural language text into images.
 Each NFT will be randomly generated with different attributes and rarity levels.
 Attributes include a variety of subjects, hats, eyes, scarfs, and backgrounds.
-With over 1,249,248 possibilities, there is sure to be something for everyone!
+With over 14 million possibilities, there is sure to be something for everyone!
 ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!
 
 There are 7 Rarity Levels (listed in order of increasing rarity):

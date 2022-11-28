@@ -105,7 +105,7 @@ Total Hats: 6
 | Sunglasses     |
 | Laser eyes     |
 | vv Only Christmas Miracle vv |
-| Pepermint      |
+| peppermint      |
 
 Total Eyes: 13
 
@@ -127,9 +127,31 @@ Total Eyes: 13
 | Rainbow        |
 | Fire           |
 | vv Only Christmas Miracle vv |
-| Pepermint      |
+| peppermint      |
 
 Total Scarfs: 13
+
+## Christmas Sweaters
+
+| Sweaters       |
+| -----------    |
+| None           |
+| White          |
+| Black          |
+| Blue           |
+| Brown          |
+| Green          |
+| vv Only Mythic + vv |
+| Purple         |
+| Neon           |
+| RGB            |
+| vv Only N-F-Tacular + vv |
+| Rainbow        |
+| Fire           |
+| vv Only Christmas Miracle vv |
+| peppermint      |
+
+Total Sweaters: 13
 
 ## Backgrounds
 
@@ -150,8 +172,8 @@ Total Backgrounds: 7
 | Style          |
 | -----------    | 
 | Realistic      |
-| Toon           |
-| meme           |
+| Cartoon        |
 | NFT            |
+| Pixel          |
 
 Total Styles: 4

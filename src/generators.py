@@ -16,6 +16,11 @@ def generate_dalle_art(
     """
     # Generate and download new Dalle2 images
     img_files = dalle.generate_and_download(description, image_dir=img_dir)
+
+    if img_files is None:
+        # Something went wrong...
+        return None, None
+
     images = []
     for img_file in img_files:
         images.append(Image.open(img_file))
@@ -73,19 +78,30 @@ def generate_dalle_description(attributes: Dict[str, str]) -> str:
         s += attributes["hat"]
         s += " "
 
-    if not has_eyes:
-        # This means we must be wearing sunglasses
-        # so this should be considered an accessory rather than a feature
+    has_sweater = False
+    if attributes["sweater"] is not None:
+        has_sweater = True
         if has_hat:
             s += ", "
         else:
             s += "wearing a "
 
+        s += attributes["sweater"]
+        s += " Christmas sweater "
+
+    if not has_eyes:
+        # This means we must be wearing sunglasses
+        # so this should be considered an accessory rather than a feature
+        if has_hat or has_sweater:
+            s += ", "
+        else:
+            s += "wearing "
+
         s += attributes["eyes"]
         s += " "
 
     if attributes["scarf"] is not None:
-        if has_hat or not has_eyes:
+        if has_hat or has_sweater or not has_eyes:
             s += "and a "
         else:
             s += "wearing a "
