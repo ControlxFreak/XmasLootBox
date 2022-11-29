@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 import warnings
-from typing import List, Dict, Tuple, Any
+from typing import List, Dict, Tuple
 import random
 import json
 from threading import Lock
@@ -117,7 +117,24 @@ executor = ThreadPoolExecutor(max_workers=4)
 # ============================================ #
 # Utilities
 # ============================================ #
-async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str, Any]:
+async def verification(ctx, username: str) -> Tuple[str, str]:
+    # Get the current date and create a date hash
+    year, week_num, day_num = get_date()
+    day_hash = hash((year, week_num, day_num))
+
+    # Check that the date is valid
+    if (
+        year != VALID_YEAR or week_num < START_WEEK or week_num > END_WEEK
+    ) and not SIM_FLAG:
+        # Unfortunately, the season has ended, but I haven't shutdown the bot yet...
+        await send_eoe_msg(ctx)
+        raise RuntimeError("End of Event.")
+
+    user_addr = await user_check(ctx, username, day_hash)
+    return user_addr, week_num
+
+
+async def user_check(ctx: Messageable, username: str, day_hash: int) -> str:
     """Verify that this user:
     1. Has an account
     2. Has not tried to claim today
@@ -166,7 +183,7 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> Dict[str
     # Release the mutex and return
     history_mutex.release()
 
-    return accounts
+    return accounts[username]["address"]
 
 
 def make_uniq_dirs() -> Tuple[int, str, str, str]:
@@ -251,31 +268,16 @@ def save_metadata(
     return data_files
 
 
-# ============================================ #
-# Commands
-# ============================================ #
-@bot.command()
-async def claim(ctx: Messageable):
-    """Claim your daily gift!"""
-    # ============================================ #
-    # Verification
-    # ============================================ #
-    # Get the current date and create a date hash
-    year, week_num, day_num = get_date()
-    day_hash = hash((year, week_num, day_num))
-
-    # Check that the date is valid
-    if (
-        year != VALID_YEAR or week_num < START_WEEK or week_num > END_WEEK
-    ) and not SIM_FLAG:
-        # Unfortunately, the season has ended, but I haven't shutdown the bot yet...
-        await send_eoe_msg(ctx)
-        raise RuntimeError("End of Event.")
-
-    # Check that the user has an account setup
-    username = (ctx.message.author.name).lower()
-    users = await user_check(ctx, username, day_hash)
-    user_addr = users[username]["address"]
+async def gift_util(
+    ctx: Messageable,
+    username: str,
+    user_addr: str,
+    rarity_label: str,
+    description: str,
+    metadata: Dict[str, str],
+):
+    # Send the admirable message
+    await send_admirable_msg(ctx, username, rarity_label, description)
 
     try:
         # ============================================ #
@@ -288,25 +290,6 @@ async def claim(ctx: Messageable):
             unq_dat_dir,
             unq_prv_dir,
         ) = make_uniq_dirs()
-
-        # ============================================ #
-        # Sampling
-        # ============================================ #
-        print("Sampling the rarity and attributes...")
-        # Sample the rarity level
-        if SIM_FLAG:
-            rarity_label = sample_rarity_label_uniform()
-        else:
-            rarity_label = sample_rarity_label(week_num)
-
-        # Sample the metadata
-        attributes = sample_attributes(rarity_label)
-
-        # Structure the text string
-        description = generate_dalle_description(attributes)
-
-        # Send the admirable message
-        await send_admirable_msg(ctx, username, rarity_label, description)
 
         # ============================================ #
         # Image Generation
@@ -345,12 +328,6 @@ async def claim(ctx: Messageable):
 
         print(f"Saving the NFTs ({first_nft_id})...")
         _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
-
-        # ============================================ #
-        # Metadata Generation
-        # ============================================ #
-        # Generate the ERC721-compliant metadata json
-        metadata = generate_erc721_metadata(attributes, description)
 
         # ============================================ #
         # Web3
@@ -445,6 +422,86 @@ async def claim(ctx: Messageable):
         shutil.rmtree(unq_nft_dir)
         shutil.rmtree(unq_dat_dir)
         shutil.rmtree(unq_prv_dir)
+
+
+# ============================================ #
+# Commands
+# ============================================ #
+@bot.command()
+async def claim(ctx: Messageable):
+    """Claim your daily gift!"""
+    # ============================================ #
+    # Verification
+    # ============================================ #
+    username = (ctx.message.author.name).lower()
+    user_addr, week_num = await verification(ctx, username)
+
+    # ============================================ #
+    # Sampling
+    # ============================================ #
+    print("Sampling the rarity and attributes...")
+    # Sample the rarity level
+    if SIM_FLAG:
+        rarity_label = sample_rarity_label_uniform()
+    else:
+        rarity_label = sample_rarity_label(week_num)
+
+    # Sample the metadata
+    attributes = sample_attributes(rarity_label)
+
+    # Structure the text string
+    description = generate_dalle_description(attributes)
+
+    # ============================================ #
+    # Metadata Generation
+    # ============================================ #
+    # Generate the ERC721-compliant metadata json
+    metadata = generate_erc721_metadata(attributes, description)
+
+    # ============================================ #
+    # Gift
+    # ============================================ #
+    # Use the gift util to construct the gifts and send the message
+    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
+
+
+@bot.command()
+async def create(ctx: Messageable, *, description: str):
+    """Create your own daily gift!
+
+    Aide my elves and provide a prompt to create your daily gift!
+    Note that no attributes will be listed on OpenSea if you decide to use your own description.
+
+    Args:
+        description (str): Description of your artwork.
+    """
+    # ============================================ #
+    # Verification
+    # ============================================ #
+    username = (ctx.message.author.name).lower()
+    user_addr, week_num = await verification(ctx, username)
+
+    # ============================================ #
+    # Sampling
+    # ============================================ #
+    print("Sampling the rarity and attributes...")
+    # Sample the rarity level
+    if SIM_FLAG:
+        rarity_label = sample_rarity_label_uniform()
+    else:
+        rarity_label = sample_rarity_label(week_num)
+
+    # ============================================ #
+    # Metadata Generation
+    # ============================================ #
+    # Generate the ERC721-compliant metadata json
+    metadata = generate_erc721_metadata({}, description)
+
+    # ============================================ #
+    # Gift
+    # ============================================ #
+    # Use the gift util to construct the gifts and send the message
+    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
 
 
 @bot.command()

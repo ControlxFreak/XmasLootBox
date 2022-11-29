@@ -12,20 +12,20 @@ set -e
 timestamp=`date '+%Y%m%d%H%M'`
 SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 
-mkdir -p $SCRIPTPATH/backups
+mkdir -p $SCRIPTPATH/bkups
 
 ACCOUNTS="accounts.json"
 TS_ACCOUNTS="$timestamp-$ACCOUNTS"
-cp "$SCRIPTPATH/$ACCOUNTS" "$SCRIPTPATH/backups/$TS_ACCOUNTS"
+cp "$SCRIPTPATH/$ACCOUNTS" "$SCRIPTPATH/bkups/$TS_ACCOUNTS"
 
 HISTORY="history.json"
 TS_HISTORY="$timestamp-$HISTORY"
-cp "$SCRIPTPATH/$HISTORY" "$SCRIPTPATH/backups/$TS_HISTORY"
+cp "$SCRIPTPATH/$HISTORY" "$SCRIPTPATH/bkups/$TS_HISTORY"
 
 OWNERS="owners.json"
 TS_OWNERS="$timestamp-$OWNERS"
-cp "$SCRIPTPATH/$OWNERS" "$SCRIPTPATH/backups/$TS_OWNERS"
+cp "$SCRIPTPATH/$OWNERS" "$SCRIPTPATH/bkups/$TS_OWNERS"
 
 NEXT_ID="next_id"
 TS_NEXT_ID="$timestamp-$NEXT_ID"
-cp "$SCRIPTPATH/$NEXT_ID" "$SCRIPTPATH/backups/$TS_NEXT_ID"
+cp "$SCRIPTPATH/$NEXT_ID" "$SCRIPTPATH/bkups/$TS_NEXT_ID"

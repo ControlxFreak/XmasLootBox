@@ -70,18 +70,19 @@ def get_subjects(rarity_level: int) -> List[str]:
         "lion",
         "baby",
         "robot",
+        "dino",
         "dragon",
         "reindeer",
         "santa claus",
     ]
 
-    if rarity_level < 4:
-        # Must be < Mythical
+    if rarity_level < 3:
+        # Must be < Legendary
         return subjects[:5]
 
     if rarity_level < 6:
-        # Must be Mythical to N-F-Tacular
-        return subjects[:8]
+        # Must be anything but christmas miracle
+        return subjects[:9]
 
     # Must be christmas miracle
     return subjects
@@ -106,7 +107,7 @@ def get_hats(rarity_level: int) -> List[Optional[str]]:
 
     if rarity_level < 5:
         # Must be < N-F-Tacular
-        return hats[:2]
+        return hats[:3]
 
     if rarity_level < 6:
         # Must be < Christmas Miracle
@@ -136,7 +137,7 @@ def get_eyes(rarity_level: int) -> List[str]:
 
     if rarity_level < 4:
         # Must be < Mythical
-        return eyes[:4]
+        return eyes[:5]
 
     if rarity_level < 5:
         # Must be < N-F-Tacular
@@ -224,9 +225,6 @@ def get_backgrounds(rarity_level: int) -> List[str]:
         "christmas tree",
         "north pole",
     ]
-    if rarity_level < 6:
-        # Must be < Christmas Miracle
-        return backgorunds[:2]
     # Must be Christmas Miracle
     return backgorunds
 
