@@ -62,7 +62,6 @@ from src.msgs import (
 from src.constants import (
     VALID_YEAR,
     START_WEEK,
-    END_WEEK,
     OUT_DIR,
 )
 from src.eth import (
@@ -115,7 +114,6 @@ next_nft_mutex = Lock()
 # Initialize a threadpool executor
 executor = ThreadPoolExecutor(max_workers=4)
 
-
 # ============================================ #
 # Utilities
 # ============================================ #
@@ -125,15 +123,13 @@ async def verification(ctx, username: str) -> Tuple[str, str]:
     day_hash = hash((year, week_num, day_num))
 
     # Check that the date is valid
-    if (
-        year != VALID_YEAR or week_num < START_WEEK or week_num > END_WEEK
-    ) and not SIM_FLAG:
+    if year != VALID_YEAR:
         # Unfortunately, the season has ended, but I haven't shutdown the bot yet...
         await send_eoe_msg(ctx)
         raise RuntimeError("End of Event.")
 
     user_addr = await user_check(ctx, username, day_hash)
-    return user_addr, week_num
+    return user_addr, (week_num - START_WEEK)
 
 
 async def user_check(ctx: Messageable, username: str, day_hash: int) -> str:
@@ -164,14 +160,15 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> str:
         history = json.load(f)
 
     # Check to see if this user has claimed a loot box today
-    if day_hash in history[username] and not SIM_FLAG:
+    if day_hash in history[username]:
         await send_impish_msg(ctx)
         history_mutex.release()
         raise RuntimeError("Multi-claim.")
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today
-    history[username].append(day_hash)
+    if not SIM_FLAG:
+        history[username].append(day_hash)
 
     # Make a copy just in case
     shutil.copyfile("history.json", "/tmp/history.json")
