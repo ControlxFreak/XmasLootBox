@@ -7,6 +7,7 @@ import json
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 import shutil
+from datetime import datetime
 
 import discord
 from discord.ext import commands
@@ -276,6 +277,8 @@ async def gift_util(
     description: str,
     metadata: Dict[str, str],
 ):
+    start = datetime.now()
+
     # Send the admirable message
     await send_admirable_msg(ctx, username, rarity_label, description)
 
@@ -423,6 +426,8 @@ async def gift_util(
         shutil.rmtree(unq_dat_dir)
         shutil.rmtree(unq_prv_dir)
 
+    stop = datetime.now()
+    print("Elapsed Time: ", str(stop - start))
 
 # ============================================ #
 # Commands
