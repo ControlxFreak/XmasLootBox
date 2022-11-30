@@ -2,5 +2,6 @@ discord
 python-dotenv
 dalle2
 numpy
+Pillow
 web3
 table2ascii
