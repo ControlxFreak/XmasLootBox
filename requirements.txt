@@ -1,10 +1,6 @@
 discord
 python-dotenv
 dalle2
-matplotlib
 numpy
-scipy
 web3
 table2ascii
-black
-flake8

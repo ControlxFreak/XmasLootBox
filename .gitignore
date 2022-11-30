@@ -2,6 +2,7 @@
 .venv
 .swp
 nfts/
+bkups/
 
 next_id
 accounts.json

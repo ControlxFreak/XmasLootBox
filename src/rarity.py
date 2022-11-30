@@ -1,9 +1,7 @@
 # %%
 from typing import List, Optional, Dict
 import numpy as np
-from scipy.stats import poisson
 import random
-
 
 def get_rarity_labels() -> List[str]:
     """Get the list of rarity labels."""
@@ -247,9 +245,10 @@ def sample_rarity_label(week_num: int) -> str:
     # Get the Poisson mean for this week
     mus = [1, 2, 6, 12, 16]
     mu = mus[week_num]
+    exp_mu = np.exp(-mu)
 
     # Compute the PMF over this support and normalize to ensure its still a distribution
-    pmf = poisson.pmf(ids, mu=mu)
+    pmf = [(exp_mu*(mu**i))/np.math.factorial(i) for i in ids]
     pmf /= np.sum(pmf)
 
     # Sample from a categorical distribution
