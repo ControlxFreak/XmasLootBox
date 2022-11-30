@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 import warnings
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 import random
 import json
 from threading import Lock
@@ -725,9 +725,13 @@ async def _random(ctx: Messageable):
 
 
 @bot.command()
-async def balance(ctx: Messageable):
-    """Display your current ethereum and NFTs balance."""
-    username = (ctx.message.author.name).lower()
+async def balances(ctx: Messageable, username: Optional[str] = None):
+    """Display ethereum and NFTs balances.
+
+    Args:
+        username (str): Name of the user whose balance you'd like to display. Use their official discord name (with no numbers), not their server nickname.
+            If not included, then this will display everyone's balance.
+    """
 
     # Get the accounts
     accounts_mutex.acquire()
@@ -735,62 +739,30 @@ async def balance(ctx: Messageable):
         accounts = json.load(f)
     accounts_mutex.release()
 
-    if username not in accounts:
-        await send_no_wallet_msg(ctx, username)
-        return
+    # Check if the username input argument is none or not
+    if username is None:
+        bals = {}
+        for username, keys in accounts.items():
+            # Get the balances
+            user_addr = keys["address"]
+            eth_balance, nft_balance = await get_balance(user_addr)
+            bals[username] = {"eth": eth_balance, "nft": nft_balance}
 
-    user_addr = accounts[username]["address"]
+        # Format the message
+        await send_all_balances_msg(ctx, bals)
+    else:
+        # If it is not None, check it exists and send just that balance
+        if username not in accounts:
+            await send_no_wallet_msg(ctx, username)
+            return
 
-    # Get the balances
-    eth_balance, nft_balance = await get_balance(user_addr)
+        user_addr = accounts[username]["address"]
 
-    # Format the message
-    await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
-
-
-@bot.command()
-async def balanceOf(ctx: Messageable, username: str):
-    """Display a user's current ethereum and NFTs balance."""
-    username = username.lower()
-
-    # Get the accounts
-    accounts_mutex.acquire()
-    with open("accounts.json", "r") as f:
-        accounts = json.load(f)
-    accounts_mutex.release()
-
-    if username not in accounts:
-        await send_no_wallet_msg(ctx, username)
-        return
-
-    user_addr = accounts[username]["address"]
-
-    # Get the balances
-    eth_balance, nft_balance = await get_balance(user_addr)
-
-    # Format the message
-    await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
-
-
-@bot.command()
-async def allBalances(ctx: Messageable):
-    """Display everyone's ethereum and NFTs balance."""
-    # Get the accounts
-    accounts_mutex.acquire()
-    with open("accounts.json", "r") as f:
-        accounts = json.load(f)
-    accounts_mutex.release()
-
-    bals = {}
-    for username, keys in accounts.items():
         # Get the balances
-        user_addr = keys["address"]
         eth_balance, nft_balance = await get_balance(user_addr)
-        bals[username] = {"eth": eth_balance, "nft": nft_balance}
 
-    # Format the message
-    await send_all_balances_msg(ctx, bals)
-
+        # Format the message
+        await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
 
 @bot.command()
 async def gift(ctx: Messageable, recipient: str, nft_id: int):
@@ -800,7 +772,7 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
 
     Args:
         ctx (Messageable): Discord Context
-        recipient (str): Recipient of the NFT. Use the official discord name, not their server nickname.
+        recipient (str): Recipient of the NFT. Use their official discord name (with no numbers), not their server nickname.
     """
     recipient = recipient.lower()
     sender = (ctx.message.author.name).lower()
