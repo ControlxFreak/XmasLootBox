@@ -34,7 +34,7 @@ def get_rarity_color(rarity_label: str) -> hex:
     color_map = {
         "common": 0x808080,  # Grey
         "uncommon": 0x00873E,  # Green
-        "rare": 0x405685,  # Blue
+        "rare": 0x4056AA,  # Blue
         "legendary": 0xA020F0,  # Purple
         "mythical": 0xFFFF00,  # Yellow
         "n-f-tacular": 0xFFA500,  # Orange
