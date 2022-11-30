@@ -40,7 +40,8 @@ from src.msgs import (
     send_error,
     send_daily_eth_error,
     send_mint_error,
-    send_faq_msg,
+    send_bot_faq_msg,
+    send_web3_faq_msg,
     send_impish_msg,
     send_invalid_username,
     send_nft_dne_msg,
@@ -836,10 +837,22 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
 
 
 @bot.command()
-async def faq(ctx: Messageable):
-    """Frequently Asked Questions."""
-    await send_faq_msg(ctx)
+async def faq(ctx: Messageable, topic: str = "bot"):
+    """Frequently asked questions about the bot or web3.
 
+    Args:
+        topic (optional[str]): FAQ topic that you would like to display.
+            Available options are: "bot", "web3", or "all".
+            If not supplied, it will default to "bot".
+    """
+    if topic.lower() not in ["bot", "web3", "all"]:
+        await ctx.send(f"{topic} is not a supported FAQ topic.\nSee to '!help faq' for more details.")
+
+    if topic.lower() == "bot" or topic.lower() == "all":
+        await send_bot_faq_msg(ctx)
+
+    if topic.lower() == "web3" or topic.lower() == "all":
+        await send_web3_faq_msg(ctx)
 
 @bot.command()
 async def welcome(ctx: Messageable):

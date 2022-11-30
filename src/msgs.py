@@ -310,23 +310,31 @@ async def send_transfer_conf_msg(ctx, sender, recipient, nft_id):
     await ctx.channel.send(embed=embedVar)
 
 
-async def send_faq_msg(ctx):
+async def send_bot_faq_msg(ctx):
     embedVar = discord.Embed(
-        title="Frequently Asked Questions",
+        title="Frequently Asked Questions (bot)",
         description="\
         **Why is this bot so slow?**\n\
-        For a couple of reasons...\n\
-        1. Dalle is slow (~30s-1min)\n\
-        2. I am slow (*..well my program at least..*) (~10s)\n\
-        3. Uploading to IPFS is slow (~10s)\n\
-        4. Interacting with an Ethereum testnet is slow (~30s-1 min)\n\
-        5. OpenSea is slow (~30s - 1 min)\n\n\
-        so... sorry! I hope it is worth the wait. \
-        A lot of the variability depends on how busy the Ethereum network is at the time. \
-        Since we are using a testnet, it is extra slow... but at least it is free!\n\
-        If none of the above made sense, read below or TL;DR; I am cheap and used free stuff as much as possible.\n\n\
+        For a couple of reasons...\n\n\
+        1. My laptop is slow (~10 years old)\n\
+        2. Dalle is slow (~30s-1min)\n\
+        3. I am slow (*..well my program at least..*) (~30s)\n\
+        4. Uploading to IPFS is slow (~10s)\n\
+        5. Interacting with an Ethereum testnet is slow (~30s-1 min)\n\
+        6. OpenSea is slow (~30s - 1 min)\n\n\
+        sorry! I hope it is worth the wait. \
+        Also, times can greatly vary based on how busy the Ethereum network is at the time. \
+        If none of the above made sense, use the '!faq web3' command for more information.\n\n\
+        **How do I participate?**\n\
+        Every day you can claim a gift using ONE of the following commands:\n\n\
+        !claim\n\
+        !create ARTWORK DESCRIPTION\n\n\
+        Both commands will send you a set of 4 NFTs. \
+        The !create command allows you to provide your own art description to be sent to the AI art generator, [Dalle-2](https://openai.com/dall-e-2/). \
+        The !claim command will randomly sample the attributes for your artwork. \
+        Gifts from both commands will have an associated rarity level (read below), which determines the type of animated frame that your NFT will have.\n\n\
         **What is rarity?**\n\
-        There are 7 possible rarity levels for your gifts:\n\
+        There are 7 possible rarity levels for your gifts:\n\n\
         1. Common\n\
         2. Uncommon\n\
         3. Rare\n\
@@ -334,8 +342,30 @@ async def send_faq_msg(ctx):
         5. Mythical\n\
         6. N-F-Tacular\n\
         7. Christmas Miracle\n\n\
-        Each rarity level has its unique set of animated frames and set of attributes.\n\n \
-        *My elves usually feel increasingly generous as it gets closer to Christmas!* As a result, every week it becomes more likely to receive higher-tier gifts!\n\n\
+        Each rarity level has its unique set of animated frames and set of attributes. \
+        *My elves usually feel increasingly generous as it gets closer to Christmas!* As a result, every week it becomes more likely to receive higher-tier gifts! \
+        [Here is a more detailed description, including the probabilities per week.](https://github.com/ControlxFreak/XmasLootBox/blob/main/DESIGN.md)\n\n\
+        **How much ETH do I need to gift an NFT?**\n\
+        This really depends on how busy the network is.\n\n\
+        *Short answer:* I think ~0.004 ETH should be good on average.\n\n\
+        *Long answer:* Every transaction on the Ethereum network requires gas to prevent malicious users from attacking the network. \
+        The amount of gas required to do each operation on the network varies with network traffic. \
+        Busy network => high gas prices, idle network => low gas prices. \
+        On average, the price of gas is around ~50Gwei (50e-9 ETH... just think of Gwei as the 'nano-' equivalent in meters), but this fluctuates greatly. \
+        Now, that price is *per computer operation*... transferring an NFT requires around 65,000 operations, meaning the cost is around (65000 * 50e-9) = 0.00325 ETH. \
+        (There is also a tip that you need to pay the node operators to incentivize them to continue donating their computers to the Ethereum network... but that is cheap on a testnet so I rounded to 0.004 ETH.)\n\
+        [Here is more information if you are interested](https://ethereum.org/en/developers/docs/gas/), or use the '!faq web3` for more answers to FAQs about web3.\n\n\
+        **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
+        Great question. 🤷‍♂️ I needed something to do when Katelyn was asleep and I missed coding.",
+        color=0x4056AA,
+    )
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar)
+
+async def send_web3_faq_msg(ctx):
+    embedVar = discord.Embed(
+        title="Frequently Asked Questions (web3)",
+        description="\
         **What is Ethereum?**\n\
         Ethereum is just a big-ol' decentralized computer.\n\
         It sounds fancy to tech people cause it uses a blockchain to maintain its state. \
@@ -352,26 +382,7 @@ async def send_faq_msg(ctx):
         That asset (in our case, the image) is represented by a token and is sent to the owner's address. \
         This becomes cryptographically secured in such a manner that *the proof of ownership* cannot be duplicated (of course the image can be duplicated, but no one else can prove they own it is the idea). \
         People are now using NFTs to sell houses and stuff, it doesn't have to be cat images. \
-        [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)",
-        color=0x0000FF,
-    )
-    # Send the message to the channel
-    await ctx.channel.send(embed=embedVar)
-
-    embedVar = discord.Embed(
-        title="Frequently Asked Questions (ctn.)",
-        description="\
-        **How much ETH do I need to gift an NFT?**\n\
-        This really depends on how busy the network is.\n\
-        *Short answer:* I think ~0.004 ETH should be good on average.\n\
-        *Long answer:* As described in (**What is the difference between ETH and Ethereum?**), every transaction requires gas to prevent malicious users from attacking the network. \
-        The amount of gas required to do each operation on the network varies with network traffic. \
-        Busy network => high gas prices, idle network => low gas prices. \
-        On average, the price of gas is around ~50Gwei (50e-9 ETH... just think of Gwei as the 'nano-' equivalent in meters), but this fluctuates greatly. \
-        When developing this bot, most of my transactions were around 10Gwei, but I've seen them go as high as 100Gwei at times. \
-        Now, that price is *per computer operation*... transferring an NFT requires around 65,000 operations, meaning the cost is around (65000 * 50e-9) = 0.00325 ETH. \n\
-        (There is also a tip that you need to pay the node operators to incentivize them to continue donating their computers to the Ethereum network... but that is cheap on a testnet so I rounded to 0.004 ETH.)\n\
-        [Here is more information if you are interested](https://ethereum.org/en/developers/docs/gas/).\n\n\
+        [Here is more information](https://en.wikipedia.org/wiki/Non-fungible_token)\n\n\
         **What is IPFS?**\n\
         Just think of IPFS as a decentralized dropbox or google drive.\n\
         It allows you to store your data in a decentralized way (i.e., without the need for a 3rd party like Dropbox or Google). \
@@ -383,10 +394,8 @@ async def send_faq_msg(ctx):
         Nothing on it has any value in the real world. \
         You cannot sell your ETH from this network for USD or anything like that... In fact, websites will give you free ETH on a testnet to use for development. \
         However, there is no free lunch. Since it is just used for testing, it can be way more buggy than the real Ethereum network and (since it doesn't cost real $$) developers SPAM the network with transactions all the time and cause it to slow down... but it is free.\n\
-        If you care, we are using the [Goerli testnet](https://goerli.net/). There are others, but this is the best IMO.\n\n\
-        **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
-        Great question. 🤷‍♂️ I needed something to do when Katelyn was asleep and I missed coding.\n",
-        color=0x0000FF,
+        If you care, we are using the [Goerli testnet](https://goerli.net/). There are others, but this is the best IMO.\n\n",
+        color=0x4056AA,
     )
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)

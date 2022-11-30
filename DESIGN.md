@@ -1,6 +1,3 @@
-# --------------------------------------------------------------- #
-# vvvvvv DEVELOPER EYES ONLY vvvvvv
-# --------------------------------------------------------------- #
 # Rarity Level Overview
 
 There are 7 NFT Rarity Levels.
