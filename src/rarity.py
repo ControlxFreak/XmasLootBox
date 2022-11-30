@@ -64,9 +64,9 @@ def get_subjects(rarity_level: int) -> List[str]:
         "dog",
         "monkey",
         "panda",
+        "fox",
         "owl",
         "lion",
-        "baby",
         "robot",
         "dino",
         "dragon",
@@ -76,7 +76,7 @@ def get_subjects(rarity_level: int) -> List[str]:
 
     if rarity_level < 3:
         # Must be < Legendary
-        return subjects[:5]
+        return subjects[:6]
 
     if rarity_level < 6:
         # Must be anything but christmas miracle
@@ -213,7 +213,7 @@ def get_sweaters(rarity_level: int) -> List[Optional[str]]:
     return sweaters
 
 
-def get_backgrounds(rarity_level: int) -> List[str]:
+def get_backgrounds() -> List[str]:
     """Get the list of backgrounds available to be sampled at a given rarity level."""
     backgorunds = [
         "snowy",
@@ -229,7 +229,7 @@ def get_backgrounds(rarity_level: int) -> List[str]:
 
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
-    return ["realistic", "cartoon", "NFT", "pixel"]
+    return ["cartoon", "NFT", "pixel", "cute"]
 
 
 def sample_rarity_label(week_num: int) -> str:
@@ -307,7 +307,7 @@ def sample_attributes(rarity_label: str) -> Dict[str, str]:
     attributes["sweater"] = sweater
 
     # Sample the background
-    backgrounds = get_backgrounds(rarity_level)
+    backgrounds = get_backgrounds()
     background = random.choice(backgrounds)
     attributes["background"] = background
 

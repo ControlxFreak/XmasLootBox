@@ -44,8 +44,8 @@ Total Frames: 14
 | Panda         |
 | Owl           |
 | Lion          |
-| vv Mythical + vv | 
-| Baby          |
+| Fox           |
+| vv Legendary + vv | 
 | Robot         |
 | Dragon        |
 | vv Only Christmas Miracle vv | 
@@ -168,7 +168,7 @@ Total Backgrounds: 7
 
 | Style          |
 | -----------    | 
-| Realistic      |
+| Cute           |
 | Cartoon        |
 | NFT            |
 | Pixel          |
