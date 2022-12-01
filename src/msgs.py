@@ -362,6 +362,7 @@ async def send_bot_faq_msg(ctx):
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar)
 
+
 async def send_web3_faq_msg(ctx):
     embedVar = discord.Embed(
         title="Frequently Asked Questions (web3)",
@@ -406,11 +407,11 @@ async def send_welcome_msg(ctx):
         title="HO HO HO HO! MERRY CHRISTMAS! Welcome to the 2022 Discord Advent Calendar!",
         description=f"\
         Every day in the month of December, my elves will make you a special gift:\n\n*4 completely unique NFTs and 0.01 ETH!*\n\n\
-        My new AI elves have been working hard all year to perfectly generate unique gifts, spanning a variety of rarity levels and an assortment of subjects, hats, eyes, scarfs and backgrounds. \
+        My new AI elves have been working hard all year to perfectly generate unique gifts, spanning a variety of rarity levels and an assortment of subjects, hats, eyes, scarfs and backgrounds.\
         With over 14 million possible combinations, there is sure to be something for everyone! ...and if not, you can send your NFTs as gifts to other users if you are feeling the Christmas spirit!\n\n\
-        *To get started, write @SantaBot a Christmas message asking to join!* \
-        If you impress, @SantaBot he will add you to the game!*\n\n\
-        *Once you have been added, use the !claim command to claim your daily gift!*\n\n\
+        *Use the !join command to be added to the game!*\n\n\
+        *Once you have been added, use the !claim or !create command to claim your daily gift!*\n\n\
+        Use the !help or !faq commands for more information or answers to frequently asked questions respectively.\
         Throughout the month, we can see our collection grow on [OpenSea]({OPENSEA_URL})!\n\n",
         color=0xC54245,
     )

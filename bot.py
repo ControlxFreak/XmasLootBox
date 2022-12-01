@@ -508,20 +508,13 @@ async def create(ctx: Messageable, *, description: str):
 
 
 @bot.command()
-async def add(ctx: Messageable, username: str):
-    """Add a new user. This can only be run by @aoth."""
-    username = username.lower()
+async def join(ctx: Messageable):
+    """Create an account and join the game!"""
+    username = (ctx.message.author.name).lower()
 
     # =============================== #
     # Verification
     # =============================== #
-    # Make sure that the only user that is allowed to call this is me
-    caller = (ctx.message.author.name).lower()
-
-    if caller.lower() != "aoth":
-        await send_not_aoth_msg(ctx)
-        return
-
     all_members = [mem.name.lower() for mem in bot.get_all_members()]
 
     if username not in all_members:
