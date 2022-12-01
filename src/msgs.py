@@ -4,7 +4,7 @@ from typing import Tuple
 import discord
 from table2ascii import table2ascii
 
-from .rarity import get_rarity_color
+from .rarity import get_rarity_color, get_rarity_labels
 from .constants import VALID_YEAR, OPENSEA_URL
 
 
@@ -489,3 +489,24 @@ async def send_all_balances_msg(ctx, bals):
 
     # Send the message to the channel
     await ctx.send(f"```\n{output}\n```")
+
+
+async def send_odds_msg(ctx, week_num, pmf):
+    rarity_labels = get_rarity_labels()
+
+    prb_fmt = []
+    for p in pmf:
+        pf = 100 * p
+        if pf < 1e-3:
+            pf = f"{pf:.2e}"
+        else:
+            pf = f"{pf:.2f}"
+        prb_fmt.append(pf)
+
+    output = table2ascii(
+        header=["Rarity", "Prob (%)"],
+        body=[[r, p] for r, p in zip(rarity_labels, prb_fmt)],
+    )
+
+    # Send the message to the channel
+    await ctx.send(f"```Rarity Distribution for Week: {week_num+1}\n{output}\n```")

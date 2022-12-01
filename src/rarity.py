@@ -232,11 +232,8 @@ def get_styles() -> List[str]:
     return ["cartoon", "NFT", "pixel", "cute"]
 
 
-def sample_rarity_label(week_num: int) -> str:
-    """Sample a rarity label based on the PMF for this week!
-
-    The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
-    """
+def get_rarity_pmf(week_num: int) -> str:
+    """Get the rarity pmf for this week."""
     # Grab the labels and IDs
     rarity_labels = get_rarity_labels()
     num_labels = len(rarity_labels)
@@ -250,8 +247,14 @@ def sample_rarity_label(week_num: int) -> str:
     # Compute the PMF over this support and normalize to ensure its still a distribution
     pmf = [(exp_mu*(mu**i))/np.math.factorial(i) for i in ids]
     pmf /= np.sum(pmf)
+    return pmf
 
-    # Sample from a categorical distribution
+def sample_rarity_label(week_num: int) -> str:
+    """Sample a rarity label based on the PMF for this week!
+
+    The week number is assumed to have been checked prior to calling this to ensure it is an integer between 0 and 4.
+    """
+    pmf = get_rarity_pmf(week_num)
     samples = np.random.multinomial(n=1, pvals=pmf)
     rarity_level = np.flatnonzero(samples)[0]
     return rarity_level_to_label(rarity_level)

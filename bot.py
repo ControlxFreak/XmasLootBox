@@ -21,6 +21,7 @@ from src.rarity import (
     sample_attributes,
     sample_frame,
     sample_rarity_label_uniform,
+    get_rarity_pmf
 )
 from src.generators import (
     generate_dalle_description,
@@ -49,7 +50,7 @@ from src.msgs import (
     send_no_nfts_msg,
     send_no_wallet_msg,
     send_nobody_nfts_msg,
-    send_not_aoth_msg,
+    send_odds_msg,
     send_not_your_nft_msg,
     send_success_msg,
     send_transfer_conf_msg,
@@ -827,6 +828,15 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
 
 
 @bot.command()
+async def odds(ctx: Messageable):
+    """Display this week's odds of getting various rarity level gifts!"""
+    _, week_num, _ = get_date()
+    week_num = week_num - START_WEEK
+    pmf = get_rarity_pmf(week_num)
+    await send_odds_msg(ctx, week_num, pmf)
+
+
+@bot.command()
 async def faq(ctx: Messageable, topic: str = "bot"):
     """Frequently asked questions about the bot or web3.
 
@@ -843,6 +853,7 @@ async def faq(ctx: Messageable, topic: str = "bot"):
 
     if topic.lower() == "web3" or topic.lower() == "all":
         await send_web3_faq_msg(ctx)
+
 
 @bot.command()
 async def welcome(ctx: Messageable):
