@@ -8,6 +8,7 @@ next_id
 accounts.json
 history.json
 owners.json
+rarities.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

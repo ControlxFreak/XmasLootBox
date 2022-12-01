@@ -4,7 +4,7 @@ from typing import Tuple
 import discord
 from table2ascii import table2ascii
 
-from .rarity import get_rarity_color, get_rarity_labels
+from .rarity import get_rarity_color, get_rarity_labels, get_short_rarity_labels
 from .constants import VALID_YEAR, OPENSEA_URL
 
 
@@ -491,22 +491,69 @@ async def send_all_balances_msg(ctx, bals):
     await ctx.send(f"```\n{output}\n```")
 
 
-async def send_odds_msg(ctx, week_num, pmf):
-    rarity_labels = get_rarity_labels()
-
+def fmt_probs(pmf):
     prb_fmt = []
     for p in pmf:
         pf = 100 * p
-        if pf < 1e-3:
+        if pf == 0:
+            pf = "0"
+        elif pf < 1e-3:
             pf = f"{pf:.2e}"
         else:
             pf = f"{pf:.2f}"
         prb_fmt.append(pf)
+    return prb_fmt
+
+
+async def send_odds_msg(ctx, week_num, pmf_true, rarities):
+    # Get the rarity labels
+    rarity_labels = get_rarity_labels()
+    shrt_rarity_labels = get_short_rarity_labels()
+
+    # Count the number of each NFT obtained
+    totals = [0 for _ in rarity_labels]
+    for rare_dict in rarities.values():
+        counts = [rare_dict[label] for label in rarity_labels]
+        totals = [t + c for t, c in zip(totals, counts)]
+
+    totalcount = sum(totals)
+    pmf_obs = [t / totalcount for t in totals]
+
+    # Format the true pmf and observed pmf
+    prb_fmt_true = fmt_probs(pmf_true)
+    prb_fmt_obs = fmt_probs(pmf_obs)
 
     output = table2ascii(
-        header=["Rarity", "Prob (%)"],
-        body=[[r, p] for r, p in zip(rarity_labels, prb_fmt)],
+        header=["Rarity", "Prob", "Dist"],
+        body=[
+            [r, pt, po]
+            for r, pt, po in zip(shrt_rarity_labels, prb_fmt_true, prb_fmt_obs)
+        ],
     )
 
     # Send the message to the channel
-    await ctx.send(f"```Rarity Distribution for Week: {week_num+1}\n{output}\n```")
+    await ctx.send(
+        f"```Rarity Probs (%) for Week: {week_num+1}\n{output}\nTotal: {totalcount} NFTs\n```"
+    )
+
+
+async def send_rares_msg(ctx, rarities):
+    """Send the current counts for the rarities."""
+    rarity_labels = get_rarity_labels()
+    shrt_rarity_labels = get_short_rarity_labels()
+
+    body = []
+    totals = [0 for _ in rarity_labels]
+    for username, rare_dict in rarities.items():
+        counts = [rare_dict[label] for label in rarity_labels]
+        body.append([username] + counts)
+        totals = [t + c for t, c in zip(totals, counts)]
+
+    body.append(["--TOTALS--"] + totals)
+
+    output = table2ascii(
+        header=["Username"] + shrt_rarity_labels,
+        body=body,
+    )
+    # Send the message to the channel
+    await ctx.send(f"```\n{output}\n```")

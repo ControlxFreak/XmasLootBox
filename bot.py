@@ -21,7 +21,8 @@ from src.rarity import (
     sample_attributes,
     sample_frame,
     sample_rarity_label_uniform,
-    get_rarity_pmf
+    get_rarity_pmf,
+    get_rarity_labels,
 )
 from src.generators import (
     generate_dalle_description,
@@ -59,6 +60,7 @@ from src.msgs import (
     send_user_has_account,
     send_users_msg,
     send_welcome_msg,
+    send_rares_msg,
 )
 from src.constants import (
     VALID_YEAR,
@@ -111,9 +113,11 @@ accounts_mutex = Lock()
 history_mutex = Lock()
 owners_mutex = Lock()
 next_nft_mutex = Lock()
+rarities_mutex = Lock()
 
 # Initialize a threadpool executor
 executor = ThreadPoolExecutor(max_workers=4)
+
 
 # ============================================ #
 # Utilities
@@ -428,6 +432,19 @@ async def gift_util(
     stop = datetime.now()
     print("Elapsed Time: ", str(stop - start))
 
+
+def increment_rarity(username: str, rarity_label: str):
+    rarities_mutex.acquire()
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+
+    rarities[username][rarity_label] += 1
+
+    with open("rarities.json", "w") as f:
+        rarities = json.load(f)
+    rarities_mutex.release()
+
+
 # ============================================ #
 # Commands
 # ============================================ #
@@ -449,6 +466,9 @@ async def claim(ctx: Messageable):
         rarity_label = sample_rarity_label_uniform()
     else:
         rarity_label = sample_rarity_label(week_num)
+
+    # Increment their rarity counter
+    increment_rarity(username, rarity_label)
 
     # Sample the metadata
     attributes = sample_attributes(rarity_label)
@@ -494,6 +514,9 @@ async def create(ctx: Messageable, *, description: str):
         rarity_label = sample_rarity_label_uniform()
     else:
         rarity_label = sample_rarity_label(week_num)
+
+    # Increment their rarity counter
+    increment_rarity(username, rarity_label)
 
     # ============================================ #
     # Metadata Generation
@@ -592,6 +615,27 @@ async def join(ctx: Messageable):
         shutil.copyfile("/tmp/owners.json", "owners.json")
 
     owners_mutex.release()
+
+    # =============================== #
+    # Rarities
+    # =============================== #
+    rarities_mutex.acquire()
+
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+
+    rarity_labels = get_rarity_labels()
+    rarities[username] = {r: 0 for r in rarity_labels}
+
+    shutil.copyfile("rarities.json", "/tmp/rarities.json")
+    try:
+        with open("rarities.json", "w") as f:
+            json.dump(rarities, f)
+    except Exception as exc:
+        print(exc)
+        shutil.copyfile("/tmp/rarities.json", "rarities.json")
+
+    rarities_mutex.release()
 
     # =============================== #
     # Send the msg
@@ -761,6 +805,17 @@ async def balances(ctx: Messageable, username: Optional[str] = None):
         # Format the message
         await send_balance_msg(ctx, username, eth_balance, nft_balance, user_addr)
 
+
+@bot.command()
+async def rares(ctx: Messageable):
+    """Display the number of rare NFTs everyone has!"""
+    rarities_mutex.acquire()
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+    rarities_mutex.release()
+    await send_rares_msg(ctx, rarities)
+
+
 @bot.command()
 async def gift(ctx: Messageable, recipient: str, nft_id: int):
     """Randomly send one of your NFTs to a user!
@@ -830,10 +885,15 @@ async def gift(ctx: Messageable, recipient: str, nft_id: int):
 @bot.command()
 async def odds(ctx: Messageable):
     """Display this week's odds of getting various rarity level gifts!"""
+    rarities_mutex.acquire()
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+    rarities_mutex.release()
+
     _, week_num, _ = get_date()
     week_num = week_num - START_WEEK
     pmf = get_rarity_pmf(week_num)
-    await send_odds_msg(ctx, week_num, pmf)
+    await send_odds_msg(ctx, week_num, pmf, rarities)
 
 
 @bot.command()
@@ -846,7 +906,9 @@ async def faq(ctx: Messageable, topic: str = "bot"):
             If not supplied, it will default to "bot".
     """
     if topic.lower() not in ["bot", "web3", "all"]:
-        await ctx.send(f"{topic} is not a supported FAQ topic.\nSee to '!help faq' for more details.")
+        await ctx.send(
+            f"{topic} is not a supported FAQ topic.\nSee to '!help faq' for more details."
+        )
 
     if topic.lower() == "bot" or topic.lower() == "all":
         await send_bot_faq_msg(ctx)

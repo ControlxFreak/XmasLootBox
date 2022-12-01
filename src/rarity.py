@@ -3,6 +3,7 @@ from typing import List, Optional, Dict
 import numpy as np
 import random
 
+
 def get_rarity_labels() -> List[str]:
     """Get the list of rarity labels."""
     return [
@@ -13,6 +14,19 @@ def get_rarity_labels() -> List[str]:
         "mythical",
         "n-f-tacular",
         "christmas miracle",
+    ]
+
+
+def get_short_rarity_labels() -> List[str]:
+    """Get the list of rarity labels (shortend)."""
+    return [
+        "com",
+        "uncom",
+        "rare",
+        "leg",
+        "myth",
+        "nftac",
+        "miracle",
     ]
 
 
@@ -245,9 +259,10 @@ def get_rarity_pmf(week_num: int) -> str:
     exp_mu = np.exp(-mu)
 
     # Compute the PMF over this support and normalize to ensure its still a distribution
-    pmf = [(exp_mu*(mu**i))/np.math.factorial(i) for i in ids]
+    pmf = [(exp_mu * (mu**i)) / np.math.factorial(i) for i in ids]
     pmf /= np.sum(pmf)
     return pmf
+
 
 def sample_rarity_label(week_num: int) -> str:
     """Sample a rarity label based on the PMF for this week!

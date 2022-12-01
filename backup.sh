@@ -26,6 +26,10 @@ OWNERS="owners.json"
 TS_OWNERS="$timestamp-$OWNERS"
 cp "$SCRIPTPATH/$OWNERS" "$SCRIPTPATH/bkups/$TS_OWNERS"
 
+RARITIES="rarities.json"
+TS_RARITIES="$timestamp-$RARITIES"
+cp "$SCRIPTPATH/$RARITIES" "$SCRIPTPATH/bkups/$TS_RARITIES"
+
 NEXT_ID="next_id"
 TS_NEXT_ID="$timestamp-$NEXT_ID"
 cp "$SCRIPTPATH/$NEXT_ID" "$SCRIPTPATH/bkups/$TS_NEXT_ID"
