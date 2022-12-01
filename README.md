@@ -24,4 +24,4 @@ There are 7 Rarity Levels (listed in order of increasing rarity):
 | Christmas Miracle |
 
 Tune-in every day to collect your advent calendar gift!
-Once I create an account for you, you will be able to see your collection on [Opensea](https://testnets.opensea.io/)!
+Once I create an account for you, you will be able to see your collection on [Opensea](https://testnets.opensea.io/collection/xmaslootbox)!
