@@ -441,7 +441,7 @@ def increment_rarity(username: str, rarity_label: str):
     rarities[username][rarity_label] += 1
 
     with open("rarities.json", "w") as f:
-        rarities = json.load(f)
+        json.dump(rarities, f)
     rarities_mutex.release()
 
 
