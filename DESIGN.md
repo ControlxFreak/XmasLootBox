@@ -1,6 +1,6 @@
 # Rarity Level Overview
 
-There are 7 NFT Rarity Levels.
+There are 7 NFT Rarity Levels. On week 1, the probability mass function is given as follows.
 
 | Rarity Level      | Initial Probabilities |
 | -----------       | -----------           |
@@ -172,5 +172,9 @@ Total Backgrounds: 7
 | Cartoon        |
 | NFT            |
 | Pixel          |
+| Anime          |
+| Digital Art    |
+| Fantasy        |
 
-Total Styles: 4
+
+Total Styles: 7
