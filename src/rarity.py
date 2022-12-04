@@ -229,7 +229,7 @@ def get_sweaters(rarity_level: int) -> List[Optional[str]]:
 
 def get_backgrounds() -> List[str]:
     """Get the list of backgrounds available to be sampled at a given rarity level."""
-    backgorunds = [
+    backgrounds = [
         "snowy",
         "icey",
         "space",
@@ -237,13 +237,12 @@ def get_backgrounds() -> List[str]:
         "christmas tree",
         "north pole",
     ]
-    # Must be Christmas Miracle
-    return backgorunds
+    return backgrounds
 
 
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
-    return ["cartoon", "NFT", "pixel", "cute", "anime"]
+    return ["cartoon", "NFT", "pixel", "cute", "anime", "digital art", "fantasy"]
 
 
 def get_rarity_pmf(week_num: int) -> str:
