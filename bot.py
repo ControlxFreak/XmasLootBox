@@ -58,6 +58,7 @@ from src.msgs import (
     send_transfer_error_msg,
     send_transfer_success_msg,
     send_user_has_account,
+    send_joke_msg,
     send_users_msg,
     send_welcome_msg,
     send_rares_msg,
@@ -922,6 +923,10 @@ async def welcome(ctx: Messageable):
     """Send the welcome message."""
     await send_welcome_msg(ctx)
 
+@bot.command()
+async def joke(ctx: Messageable):
+    """Tell a random Christmas joke!"""
+    await send_joke_msg(ctx)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)

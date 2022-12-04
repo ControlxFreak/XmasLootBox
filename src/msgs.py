@@ -1,5 +1,6 @@
 import datetime
 from typing import Tuple
+import requests
 
 import discord
 from table2ascii import table2ascii
@@ -557,3 +558,22 @@ async def send_rares_msg(ctx, rarities):
     )
     # Send the message to the channel
     await ctx.send(f"```\n{output}\n```")
+
+async def send_joke_msg(ctx):
+    try:
+        res = requests.get('https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit').json()
+
+        if res["type"] == "single":
+            embedVar = discord.Embed(
+                title=res["joke"],
+                color=0xC54245,
+            )
+        else:
+            embedVar = discord.Embed(
+                title=res["setup"],
+                description=res["delivery"],
+                color=0xC54245,
+            )
+        await ctx.channel.send(embed=embedVar)
+    except Exception as exc:
+        print(exc)
