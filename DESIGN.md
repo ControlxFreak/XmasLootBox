@@ -52,7 +52,7 @@ Total Frames: 14
 | Reindeer      |
 | Santa Claus   |
 
-Total Subjects: 11
+Total Subjects: 16
 
 ## Age
 
@@ -175,6 +175,22 @@ Total Backgrounds: 7
 | Anime          |
 | Digital Art    |
 | Fantasy        |
+| Digital Painting |
+| Cyberpunk Digital Art |
+| Steampunk Digital Art |
+| Watercolor |
+| Child's Drawing |
+| Crayon |
+| Low Poly |
+| Sticker Illustration |
+| Storybook |
+| 3D Render |
+| Vintage Disney |
+| Pixar |
+| Studio Ghibli |
+| South Park |
+| Simpsons |
+| Adventure Time |
+| Vector Art |
 
-
-Total Styles: 7
+Total Styles: 24
