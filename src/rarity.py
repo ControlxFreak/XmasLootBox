@@ -242,7 +242,32 @@ def get_backgrounds() -> List[str]:
 
 def get_styles() -> List[str]:
     """Get the list of possible artistic styles."""
-    return ["cartoon", "NFT", "pixel", "cute", "anime", "digital art", "fantasy"]
+    return [
+        "cartoon",
+        "NFT",
+        "pixel",
+        "cute",
+        "anime",
+        "fantasy",
+        "digital painting",
+        "digital art",
+        "cyberpunk digital art",
+        "steampunk digital art",
+        "watercolor",
+        "child's drawing",
+        "crayon",
+        "low poly",
+        "sticker illustration",
+        "storybook",
+        "3D render",
+        "vintage Disney",
+        "Pixar",
+        "Studio Ghibli",
+        "South Park",
+        "Simpsons",
+        "Adventure Time",
+        "vector art",
+        ]
 
 
 def get_rarity_pmf(week_num: int) -> str:
