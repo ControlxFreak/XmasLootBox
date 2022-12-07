@@ -107,14 +107,12 @@ async def send_not_aoth_msg(ctx):
     """Send the not aoth message for creating new users."""
     # Configure the message
     embedVar = discord.Embed(
-        title=f"You Are Not Authorized To Create Accounts, {ctx.message.author.name}!",
-        description="\
-        I'm sure @aoth would be happy to help. :)\n\
-        If you are interested in creating an ethereum address, @aoth can help you with that too!",
+        title=f"You are not aoth, {ctx.message.author.name}!",
+        description="Ah Ah Ah, you didn't say the magic word!",
         color=0xFF0000,
     )
-    stop_file = discord.File("assets/msgs/stop.jpg", filename="stop.jpg")
-    embedVar.set_image(url="attachment://stop.jpg")
+    stop_file = discord.File("assets/msgs/magic_word.gif", filename="magic_word.gif")
+    embedVar.set_image(url="attachment://magic_word.gif")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=stop_file)
 

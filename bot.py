@@ -43,6 +43,7 @@ from src.msgs import (
     send_daily_eth_error,
     send_mint_error,
     send_bot_faq_msg,
+    send_not_aoth_msg,
     send_web3_faq_msg,
     send_impish_msg,
     send_invalid_username,
@@ -183,6 +184,7 @@ async def user_check(ctx: Messageable, username: str, day_hash: int) -> str:
             json.dump(history, f)
     except Exception as exc:
         shutil.copyfile("history.json", "/tmp/history.json")
+        history_mutex.release()
         raise exc
 
     # Release the mutex and return
@@ -446,6 +448,18 @@ def increment_rarity(username: str, rarity_label: str):
     rarities_mutex.release()
 
 
+def decrement_rarity(username: str, rarity_label: str):
+    rarities_mutex.acquire()
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+
+    rarities[username][rarity_label] -= 1
+
+    with open("rarities.json", "w") as f:
+        json.dump(rarities, f)
+    rarities_mutex.release()
+
+
 # ============================================ #
 # Commands
 # ============================================ #
@@ -482,6 +496,105 @@ async def claim(ctx: Messageable):
     # ============================================ #
     # Generate the ERC721-compliant metadata json
     metadata = generate_erc721_metadata(attributes, description)
+
+    # ============================================ #
+    # Gift
+    # ============================================ #
+    # Use the gift util to construct the gifts and send the message
+    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
+
+
+@bot.command()
+async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[str] = None, year : int = None, month: int = None, day: int = None):
+    """Only @aoth can use this function.
+    
+    Recover the credits if something broke when a user tried to claim their gift.
+    """
+    # Check if I called it...
+    if (ctx.message.author.name).lower() != "aoth":
+        await send_not_aoth_msg(ctx)
+        return
+
+    # ========================== #
+    # Accounts
+    # ========================== #
+    accounts_mutex.acquire()
+    with open("accounts.json", "r") as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    # Check if this username has registered to play and has setup an Ethereum wallet
+    if username not in accounts.keys():
+        await send_no_wallet_msg(ctx, username)
+        raise RuntimeError("No Wallet.")
+
+    # ========================== #
+    # History
+    # ========================== #
+    if year is None or month is None or day is None:
+        year, week_num, day_num = get_date()
+        day_hash = hash((year, week_num, day_num))
+    else:
+        day_hash = hash(datetime.day(year, month, day).isocalendar())
+
+    history_mutex.acquire()
+    with open("history.json", "r") as f:
+        history = json.load(f)
+
+    # Check to see if this user has claimed a loot box today
+    if day_hash in history[username]:
+        print(f"Restoring credit for {username}, on {month}/{day}/{year}")
+
+        history[username].remove(day_hash)
+
+        # Make a copy just in case
+        shutil.copyfile("history.json", "/tmp/history.json")
+        try:
+            with open("history.json", "w") as f:
+                json.dump(history, f)
+        except Exception as exc:
+            shutil.copyfile("history.json", "/tmp/history.json")
+            history_mutex.release()
+            raise exc
+
+    history_mutex.release()
+
+    # ========================== #
+    # Rarity
+    # ========================== #
+    if rarity_label is not None:
+        print(f"Decrementing rarity for {username}, {rarity_label}")
+        decrement_rarity(username, rarity_label)
+    
+    print("Done!")
+
+
+@bot.command()
+async def topElfPower(ctx: Messageable, username: str, rarity_label: str, description: str):
+    """Only @aoth can use this function.
+
+    Create an exact gift for someone.
+    """
+    # Check if I called it...
+    if (ctx.message.author.name).lower() != "aoth":
+        await send_not_aoth_msg(ctx)
+        return
+
+    # ============================================ #
+    # Verification
+    # ============================================ #
+    user_addr, _ = await verification(ctx, username)
+
+    # ============================================ #
+    # Increment their rarity counter
+    # ============================================ #
+    increment_rarity(username, rarity_label)
+
+    # ============================================ #
+    # Metadata Generation
+    # ============================================ #
+    # Generate the ERC721-compliant metadata json
+    metadata = generate_erc721_metadata({}, description)
 
     # ============================================ #
     # Gift
