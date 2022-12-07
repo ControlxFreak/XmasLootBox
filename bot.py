@@ -399,12 +399,12 @@ async def gift_util(
         # =============================== #
         # Send 0.010 eth to get started
         # =============================== #
-        print("Sending eth...")
-        if not SIM_FLAG:
-            res = await send_daily_eth(user_addr)
-            if not res:
-                # If we ran out of eth or it didn't work for some reason... this function should still continue
-                await send_daily_eth_error(ctx)
+        # print("Sending eth...")
+        # if not SIM_FLAG:
+        #     res = await send_daily_eth(user_addr)
+        #     if not res:
+        #         # If we ran out of eth or it didn't work for some reason... this function should still continue
+        #         await send_daily_eth_error(ctx)
 
         # Create the preview image
         print("Creating Preview...")
@@ -505,7 +505,7 @@ async def claim(ctx: Messageable):
 
 
 @bot.command()
-async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[str] = None, year : int = None, month: int = None, day: int = None):
+async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[str] = None):
     """Only @aoth can use this function.
     
     Recover the credits if something broke when a user tried to claim their gift.
@@ -531,11 +531,8 @@ async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[
     # ========================== #
     # History
     # ========================== #
-    if year is None or month is None or day is None:
-        year, week_num, day_num = get_date()
-        day_hash = hash((year, week_num, day_num))
-    else:
-        day_hash = hash(datetime.day(year, month, day).isocalendar())
+    year, week_num, day_num = get_date()
+    day_hash = hash((year, week_num, day_num))
 
     history_mutex.acquire()
     with open("history.json", "r") as f:
@@ -567,6 +564,7 @@ async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[
         decrement_rarity(username, rarity_label)
     
     print("Done!")
+    await send_recovered_msg(ctx, username)
 
 
 @bot.command()

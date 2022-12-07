@@ -575,3 +575,7 @@ async def send_joke_msg(ctx):
         await ctx.channel.send(embed=embedVar)
     except Exception as exc:
         print(exc)
+
+
+async def send_recovered_msg(ctx, username):
+    ctx.channel.send(f"Recovered credit for {username}")
