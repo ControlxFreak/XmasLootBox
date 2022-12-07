@@ -63,6 +63,7 @@ from src.msgs import (
     send_users_msg,
     send_welcome_msg,
     send_rares_msg,
+    send_recovered_msg
 )
 from src.constants import (
     VALID_YEAR,
@@ -540,8 +541,6 @@ async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[
 
     # Check to see if this user has claimed a loot box today
     if day_hash in history[username]:
-        print(f"Restoring credit for {username}, on {month}/{day}/{year}")
-
         history[username].remove(day_hash)
 
         # Make a copy just in case
