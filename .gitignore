@@ -1,5 +1,6 @@
 .env
 .venv
+.python-version
 .swp
 nfts/
 bkups/

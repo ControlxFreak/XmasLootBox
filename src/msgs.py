@@ -435,7 +435,7 @@ async def send_error(ctx):
     embedVar = discord.Embed(
         title="Oh No! My Elves are Broken...",
         description="It looks like my AI elves have broken their hands during the hot coco races, meaning they cannot draw any gifts!\n\n\
-        Contact @aoth and tell him to fix this immediately.",
+        **However, I recovered your credit so feel free to try again!**.",
         color=0xFF0000,
     )
     elf_file = discord.File("assets/msgs/broken_elf.png", filename="broken_elf.png")
@@ -557,9 +557,12 @@ async def send_rares_msg(ctx, rarities):
     # Send the message to the channel
     await ctx.send(f"```\n{output}\n```")
 
+
 async def send_joke_msg(ctx):
     try:
-        res = requests.get('https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit').json()
+        res = requests.get(
+            "https://v2.jokeapi.dev/joke/Christmas?blacklistFlags=nsfw,religious,political,racist,sexist,explicit"
+        ).json()
 
         if res["type"] == "single":
             embedVar = discord.Embed(
@@ -578,4 +581,5 @@ async def send_joke_msg(ctx):
 
 
 async def send_recovered_msg(ctx, username):
-    ctx.channel.send(f"Recovered credit for {username}")
+    # Send the message to the channel
+    await ctx.channel.send(f"Recovered credit for {username}")

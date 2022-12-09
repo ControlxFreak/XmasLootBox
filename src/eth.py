@@ -124,8 +124,8 @@ def mint_nfts(addr: str, ipfs_cids: List[str]) -> bool:
             {
                 "from": account.address,
                 "nonce": nonce,
-                # 'maxPriorityFeePerGas': w3.toWei(10, 'gwei'),   # See issue #20 for math
-                # 'maxFeePerGas': w3.toWei(200, 'gwei'),          # See issue #20 for math
+                "maxPriorityFeePerGas": w3.toWei(10, "gwei"),  # See issue #20 for math
+                "maxFeePerGas": w3.toWei(200, "gwei"),  # See issue #20 for math
             }
         )
 

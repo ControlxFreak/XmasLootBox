@@ -267,7 +267,7 @@ def get_styles() -> List[str]:
         "Simpsons",
         "Adventure Time",
         "vector art",
-        ]
+    ]
 
 
 def get_rarity_pmf(week_num: int) -> str:

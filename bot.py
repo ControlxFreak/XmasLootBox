@@ -63,7 +63,7 @@ from src.msgs import (
     send_users_msg,
     send_welcome_msg,
     send_rares_msg,
-    send_recovered_msg
+    send_recovered_msg,
 )
 from src.constants import (
     VALID_YEAR,
@@ -276,7 +276,57 @@ def save_metadata(
     return data_files
 
 
-async def gift_util(
+async def _recover(ctx: Messageable, username: str, rarity_label: str):
+    # ========================== #
+    # Accounts
+    # ========================== #
+    accounts_mutex.acquire()
+    with open("accounts.json", "r") as f:
+        accounts = json.load(f)
+    accounts_mutex.release()
+
+    # Check if this username has registered to play and has setup an Ethereum wallet
+    if username not in accounts.keys():
+        await send_no_wallet_msg(ctx, username)
+        raise RuntimeError("No Wallet.")
+
+    # ========================== #
+    # History
+    # ========================== #
+    year, week_num, day_num = get_date()
+    day_hash = hash((year, week_num, day_num))
+
+    history_mutex.acquire()
+    with open("history.json", "r") as f:
+        history = json.load(f)
+
+    # Check to see if this user has claimed a loot box today
+    if day_hash in history[username]:
+        history[username].remove(day_hash)
+
+        # Make a copy just in case
+        shutil.copyfile("history.json", "/tmp/history.json")
+        try:
+            with open("history.json", "w") as f:
+                json.dump(history, f)
+        except Exception as exc:
+            shutil.copyfile("history.json", "/tmp/history.json")
+            history_mutex.release()
+            raise exc
+
+    history_mutex.release()
+
+    # ========================== #
+    # Rarity
+    # ========================== #
+    if rarity_label is not None:
+        print(f"Decrementing rarity for {username}, {rarity_label}")
+        decrement_rarity(username, rarity_label)
+
+    await send_recovered_msg(ctx, username)
+
+
+async def _gift_util(
     ctx: Messageable,
     username: str,
     user_addr: str,
@@ -314,6 +364,7 @@ async def gift_util(
             images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
 
             if images is None or img_files is None:
+                _recover(ctx, username, rarity_label)
                 await send_error(ctx)
                 raise RuntimeError("Dalle Error")
 
@@ -502,13 +553,15 @@ async def claim(ctx: Messageable):
     # Gift
     # ============================================ #
     # Use the gift util to construct the gifts and send the message
-    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
+    await _gift_util(ctx, username, user_addr, rarity_label, description, metadata)
 
 
 @bot.command()
-async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[str] = None):
+async def topElfRecover(
+    ctx: Messageable, username: str, rarity_label: Optional[str] = None
+):
     """Only @aoth can use this function.
-    
+
     Recover the credits if something broke when a user tried to claim their gift.
     """
     # Check if I called it...
@@ -516,58 +569,13 @@ async def topElfRecover(ctx: Messageable, username: str, rarity_label: Optional[
         await send_not_aoth_msg(ctx)
         return
 
-    # ========================== #
-    # Accounts
-    # ========================== #
-    accounts_mutex.acquire()
-    with open("accounts.json", "r") as f:
-        accounts = json.load(f)
-    accounts_mutex.release()
-
-    # Check if this username has registered to play and has setup an Ethereum wallet
-    if username not in accounts.keys():
-        await send_no_wallet_msg(ctx, username)
-        raise RuntimeError("No Wallet.")
-
-    # ========================== #
-    # History
-    # ========================== #
-    year, week_num, day_num = get_date()
-    day_hash = hash((year, week_num, day_num))
-
-    history_mutex.acquire()
-    with open("history.json", "r") as f:
-        history = json.load(f)
-
-    # Check to see if this user has claimed a loot box today
-    if day_hash in history[username]:
-        history[username].remove(day_hash)
-
-        # Make a copy just in case
-        shutil.copyfile("history.json", "/tmp/history.json")
-        try:
-            with open("history.json", "w") as f:
-                json.dump(history, f)
-        except Exception as exc:
-            shutil.copyfile("history.json", "/tmp/history.json")
-            history_mutex.release()
-            raise exc
-
-    history_mutex.release()
-
-    # ========================== #
-    # Rarity
-    # ========================== #
-    if rarity_label is not None:
-        print(f"Decrementing rarity for {username}, {rarity_label}")
-        decrement_rarity(username, rarity_label)
-    
-    print("Done!")
-    await send_recovered_msg(ctx, username)
+    await _recover(ctx, username, rarity_label)
 
 
 @bot.command()
-async def topElfPower(ctx: Messageable, username: str, rarity_label: str, description: str):
+async def topElfPower(
+    ctx: Messageable, username: str, rarity_label: str, description: str
+):
     """Only @aoth can use this function.
 
     Create an exact gift for someone.
@@ -597,7 +605,7 @@ async def topElfPower(ctx: Messageable, username: str, rarity_label: str, descri
     # Gift
     # ============================================ #
     # Use the gift util to construct the gifts and send the message
-    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
+    await _gift_util(ctx, username, user_addr, rarity_label, description, metadata)
 
 
 @bot.command()
@@ -639,7 +647,7 @@ async def create(ctx: Messageable, *, description: str):
     # Gift
     # ============================================ #
     # Use the gift util to construct the gifts and send the message
-    await gift_util(ctx, username, user_addr, rarity_label, description, metadata)
+    await _gift_util(ctx, username, user_addr, rarity_label, description, metadata)
 
 
 @bot.command()
@@ -1033,10 +1041,12 @@ async def welcome(ctx: Messageable):
     """Send the welcome message."""
     await send_welcome_msg(ctx)
 
+
 @bot.command()
 async def joke(ctx: Messageable):
     """Tell a random Christmas joke!"""
     await send_joke_msg(ctx)
+
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
