@@ -1,6 +1,7 @@
 import datetime
 from typing import Tuple
 import requests
+import random
 
 import discord
 from table2ascii import table2ascii
@@ -583,3 +584,50 @@ async def send_joke_msg(ctx):
 async def send_recovered_msg(ctx, username):
     # Send the message to the channel
     await ctx.channel.send(f"Recovered credit for {username}")
+
+
+async def send_already_voted_msg(ctx, username, team):
+    embedVar = discord.Embed(
+        title=f"{username} has already voted for {team}!",
+        description="If you wish to change your vote, add `-f` to the end of the command.\n\
+            That is, use: `!vote <TEAMNAME> -f`",
+        color=0xFF0000,
+    )
+    elf_file = discord.File(
+        "assets/msgs/santa-lose-soccer.png", filename="santa-lose-soccer.png"
+    )
+    embedVar.set_image(url="attachment://santa-lose-soccer.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_voted_msg(ctx, username, team):
+    embedVar = discord.Embed(
+        title="{username} has voted for {team}!",
+        description="\
+            GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLLLLLLLLLLLLLLL!\n\n\
+            \* announcer's audible deep breath \*\n\n\
+            GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
+        color=0x00873E,
+    )
+    imgname = random.choice(["santa-soccer{i}.png" for i in range(4)])
+
+    elf_file = discord.File(f"assets/msgs/{imgname}", filename=f"{imgname}")
+    embedVar.set_image(url=f"attachment://{imgname}")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_wrong_team_msg(ctx, username, team):
+    embedVar = discord.Embed(
+        title=f"{team} is not playing in the world cup, {username}!",
+        description="However, if you strongly believe in them making a miraculous victory, you can force the vote by adding `-f` to the end of the command.\n\
+            That is, use: `!vote <TEAMNAME> -f`",
+        color=0xFF0000,
+    )
+    elf_file = discord.File(
+        "assets/msgs/santa-lose-soccer.png", filename="santa-lose-soccer.png"
+    )
+    embedVar.set_image(url="attachment://santa-lose-soccer.png")
+    # Send the message to the channel
+    await ctx.channel.send(embed=embedVar, file=elf_file)

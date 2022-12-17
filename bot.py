@@ -64,6 +64,9 @@ from src.msgs import (
     send_welcome_msg,
     send_rares_msg,
     send_recovered_msg,
+    send_voted_msg,
+    send_already_voted_msg,
+    send_wrong_team_msg,
 )
 from src.constants import (
     VALID_YEAR,
@@ -117,6 +120,7 @@ history_mutex = Lock()
 owners_mutex = Lock()
 next_nft_mutex = Lock()
 rarities_mutex = Lock()
+voting_mutex = Lock()
 
 # Initialize a threadpool executor
 executor = ThreadPoolExecutor(max_workers=4)
@@ -1034,6 +1038,43 @@ async def faq(ctx: Messageable, topic: str = "bot"):
 
     if topic.lower() == "web3" or topic.lower() == "all":
         await send_web3_faq_msg(ctx)
+
+
+@bot.command()
+async def vote(ctx: Messageable, team: str, force_str: str = ""):
+    """Vote for the FIFA world cup champion."""
+    username = (ctx.message.author.name).lower()
+
+    # Read the voting file
+    voting_mutex.acquire()
+    with open("votes.json", "r") as f:
+        votes = json.load(f)
+    voting_mutex.release()
+
+    # Do some checks unless they force the vote
+    if force_str.lower() != "-f":
+        # Check if they've already voted
+        if username in votes:
+            await send_already_voted_msg(ctx, username, votes[username])
+            return
+
+        # Check that the team is either Argentina or France
+        if team.lower() not in ["argentina", "france"]:
+            await send_wrong_team_msg(ctx, username, team)
+            return
+
+    # Otherwise, add their vote and return
+    votes[username] = team.lower()
+
+    shutil.copyfile("voting.json", "/tmp/voting.json")
+    try:
+        with open("voting.json", "w") as f:
+            json.dump(votes, f)
+    except Exception as exc:
+        shutil.copyfile("/tmp/voting.json", "voting.json")
+        raise exc
+
+    await send_voted_msg(ctx, username, votes[username])
 
 
 @bot.command()

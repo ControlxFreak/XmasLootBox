@@ -10,6 +10,9 @@ accounts.json
 history.json
 owners.json
 rarities.json
+voting.json
+
+.DS_Store
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
