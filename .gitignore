@@ -10,7 +10,8 @@ accounts.json
 history.json
 owners.json
 rarities.json
-voting.json
+votes.json
+servers.json
 
 .DS_Store
 

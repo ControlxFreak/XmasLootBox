@@ -10,7 +10,7 @@ IMG_WIDTH, IMG_HEIGHT = 256, 256
 
 def get_frame_offset(frame_name: str) -> int:
     """Get an offset padding based on the frame."""
-    if frame_name in [None, "speedlines", "rain_of_gold"]:
+    if frame_name in [None, "speedlines", "rain_of_gold", "astro"]:
         # NOTE: The speedlines and rain of gold frames look a lot better
         #       if you don't create a buffer border.
         offset = 0

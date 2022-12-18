@@ -86,11 +86,13 @@ async def send_impish_msg(ctx):
     await ctx.channel.send(embed=embedVar, file=impish_file)
 
 
-async def send_success_msg(ctx, addr, first_nft_id, preview, img_cid, nft_cid):
+async def send_success_msg(
+    ctx, username, addr, first_nft_id, preview, img_cid, nft_cid
+):
     """Send the success message."""
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Your Gift is available, {ctx.message.author.name}!",
+        title=f"Your Gift is available, {username}!",
         description=f"\
         You can check out your updated collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false),\n\
         or download the [raw images](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{img_cid}) and [NFTs](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{nft_cid})\n\
@@ -433,9 +435,9 @@ async def send_invalid_username(ctx, username):
     await ctx.channel.send(embed=embedVar)
 
 
-async def send_error(ctx):
+async def send_error(ctx, username):
     embedVar = discord.Embed(
-        title="Oh No! My Elves are Broken...",
+        title=f"Oh No {username}! My Elves are Broken...",
         description="It looks like my AI elves have broken their hands during the hot coco races, meaning they cannot draw any gifts!\n\n\
         **However, I recovered your credit so feel free to try again!**.",
         color=0xFF0000,

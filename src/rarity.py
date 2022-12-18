@@ -65,8 +65,8 @@ def get_frame_names(rarity_label: str) -> Dict[str, List[Optional[str]]]:
         "rare": ["darkage_red", "darkage_blue"],
         "legendary": ["darkage_rgb", "glitch_unstable"],
         "mythical": ["glitch_neon", "neon_frame", "glitch_wave"],
-        "n-f-tacular": ["speedlines", "rain_of_gold", "cat_crime_graffiti"],
-        "christmas miracle": ["christmas_lights"],
+        "n-f-tacular": ["speedlines", "rain_of_gold", "cat_crime_graffiti", "astro"],
+        "christmas miracle": ["christmas_lights", "holiday", "mapplestory"],
     }
     return frame_map[rarity_label.lower()]
 
