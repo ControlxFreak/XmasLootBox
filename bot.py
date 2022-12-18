@@ -67,6 +67,7 @@ from src.msgs import (
     send_voted_msg,
     send_already_voted_msg,
     send_wrong_team_msg,
+    send_votes_msg,
 )
 from src.constants import (
     VALID_YEAR,
@@ -1066,15 +1067,28 @@ async def vote(ctx: Messageable, team: str, force_str: str = ""):
     # Otherwise, add their vote and return
     votes[username] = team.lower()
 
-    shutil.copyfile("voting.json", "/tmp/voting.json")
+    shutil.copyfile("votes.json", "/tmp/votes.json")
     try:
-        with open("voting.json", "w") as f:
+        with open("votes.json", "w") as f:
             json.dump(votes, f)
     except Exception as exc:
-        shutil.copyfile("/tmp/voting.json", "voting.json")
+        shutil.copyfile("/tmp/votes.json", "votes.json")
         raise exc
 
     await send_voted_msg(ctx, username, votes[username])
+
+
+@bot.command()
+async def votes(ctx: Messageable):
+    """Display the votes for the FIFA world cup champion."""
+
+    # Read the voting file
+    voting_mutex.acquire()
+    with open("votes.json", "r") as f:
+        votes = json.load(f)
+    voting_mutex.release()
+
+    await send_votes_msg(ctx, votes)
 
 
 @bot.command()

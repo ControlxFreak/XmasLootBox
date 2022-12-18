@@ -2,6 +2,7 @@ import datetime
 from typing import Tuple
 import requests
 import random
+from collections import defaultdict
 
 import discord
 from table2ascii import table2ascii
@@ -603,19 +604,45 @@ async def send_already_voted_msg(ctx, username, team):
 
 async def send_voted_msg(ctx, username, team):
     embedVar = discord.Embed(
-        title="{username} has voted for {team}!",
+        title=f"{username} has voted for {team}!",
         description="\
             GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLLLLLLLLLLLLLLL!\n\n\
             \* announcer's audible deep breath \*\n\n\
             GOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALLLLLLLLLLLLLLLLLLLLLLLLLLLLL",
         color=0x00873E,
     )
-    imgname = random.choice(["santa-soccer{i}.png" for i in range(4)])
+    imgname = random.choice([f"santa-soccer{i}.png" for i in range(4)])
 
     elf_file = discord.File(f"assets/msgs/{imgname}", filename=f"{imgname}")
     embedVar.set_image(url=f"attachment://{imgname}")
     # Send the message to the channel
     await ctx.channel.send(embed=embedVar, file=elf_file)
+
+
+async def send_votes_msg(ctx, votes):
+
+    users = list(votes.keys())
+    teams = list(votes.values())
+    team_tally = len(teams) * [0]
+
+    for user, team in votes.items():
+        # Get the team tally
+        team_idx = teams.index(team)
+        team_tally[team_idx] += 1
+
+    team_output = table2ascii(
+        header=["team", "tally"],
+        body=list(zip(teams, team_tally)),
+    )
+    # Send the message to the channel
+    await ctx.send(f"```\n{team_output}\n```")
+
+    user_output = table2ascii(
+        header=["user", "vote"],
+        body=list(zip(users, teams)),
+    )
+    # Send the message to the channel
+    await ctx.send(f"```\n{user_output}\n```")
 
 
 async def send_wrong_team_msg(ctx, username, team):
