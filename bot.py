@@ -1,15 +1,13 @@
 import os
 from copy import deepcopy
 import warnings
-from typing import List, Dict, Tuple, Optional, Callable, Coroutine
+from typing import List, Dict, Tuple, Optional
 import random
 import json
 from threading import Lock
 from concurrent.futures import ThreadPoolExecutor
 import shutil
 from datetime import datetime
-import functools
-import asyncio
 
 import discord
 from discord.ext import commands
@@ -97,7 +95,8 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 OPENAI_TOKEN = os.getenv("OPENAI_TOKEN")
 CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
 SIM_FLAG = bool(int(os.getenv("SIM_FLAG")))
-WINNING_TEAM = os.getenv("WINNING_TEAM")
+
+WINNING_TEAM = "argentina"
 
 # Initialize the dalle API
 dalle = Dalle2(OPENAI_TOKEN)
@@ -133,16 +132,6 @@ executor = ThreadPoolExecutor(max_workers=4)
 # ============================================ #
 # Utilities
 # ============================================ #
-def to_thread(func: Callable) -> Coroutine:
-    """Helper to make these blocking functions cast to threads since they are really slow and cause Discord to freak out."""
-
-    @functools.wraps(func)
-    async def wrapper(*args, **kwargs):
-        return await asyncio.to_thread(func, *args, **kwargs)
-
-    return wrapper
-
-
 async def verification(ctx, username: str) -> Tuple[str, str]:
     # Get the current date and create a date hash
     year, week_num, day_num = get_date()
@@ -530,7 +519,6 @@ def decrement_rarity(username: str, rarity_label: str):
     rarities_mutex.release()
 
 
-@to_thread
 async def _create_fifa_gift(ctx: Messageable, username: str, team: str):
     start = datetime.now()
 
@@ -1268,12 +1256,12 @@ async def votes(ctx: Messageable):
 
 
 @bot.command()
-async def fifagift(ctx: Messageable):
+async def fifagifts(ctx: Messageable):
     """Only @aoth can use this function.
 
-    Send the FIFA gifts!
+    Send the FIFA gifts to this server!
     """
-    server_id = ctx.message.channel.server.id
+    server_id = ctx.guild.id
 
     # Check if I called it...
     if (ctx.message.author.name).lower() != "aoth":
@@ -1290,11 +1278,12 @@ async def fifagift(ctx: Messageable):
     with open("servers.json", "r") as f:
         servers = json.load(f)
 
-    user_list = servers[server_id]
+    user_list = servers[str(server_id)]
 
     # Loop through the votes and create the gifts
     for user, team in votes.items():
         if user in user_list:
+            print(f"Creating fifa gift for {user}")
             await _create_fifa_gift(ctx, user, team)
 
 
