@@ -2,7 +2,7 @@ import datetime
 from typing import Tuple
 import requests
 import random
-from collections import defaultdict
+import numpy as np
 
 import discord
 from table2ascii import table2ascii
@@ -623,16 +623,17 @@ async def send_votes_msg(ctx, votes):
 
     users = list(votes.keys())
     teams = list(votes.values())
-    team_tally = len(teams) * [0]
+    uniq_teams = np.unique(teams)
+    team_tally = len(uniq_teams) * [0]
 
     for user, team in votes.items():
         # Get the team tally
-        team_idx = teams.index(team)
+        team_idx = uniq_teams.index(team)
         team_tally[team_idx] += 1
 
     team_output = table2ascii(
         header=["team", "tally"],
-        body=list(zip(teams, team_tally)),
+        body=list(zip(uniq_teams, team_tally)),
     )
     # Send the message to the channel
     await ctx.send(f"```\n{team_output}\n```")
