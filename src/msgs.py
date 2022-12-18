@@ -623,10 +623,10 @@ async def send_votes_msg(ctx, votes):
 
     users = list(votes.keys())
     teams = list(votes.values())
-    uniq_teams = np.unique(teams)
+    uniq_teams = list(np.unique(teams))
     team_tally = len(uniq_teams) * [0]
 
-    for user, team in votes.items():
+    for team in teams:
         # Get the team tally
         team_idx = uniq_teams.index(team)
         team_tally[team_idx] += 1
