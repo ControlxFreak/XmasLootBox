@@ -1,5 +1,4 @@
 import datetime
-from typing import Tuple
 import requests
 import random
 import numpy as np
@@ -9,12 +8,6 @@ from table2ascii import table2ascii
 
 from .rarity import get_rarity_color, get_rarity_labels, get_short_rarity_labels
 from .constants import VALID_YEAR, OPENSEA_URL
-
-
-def get_date() -> Tuple[int, int, int]:
-    """Find the current date in ISO format (Year, Week Number, Day Number)."""
-    # Grab the current week number
-    return datetime.date.today().isocalendar()
 
 
 def days_until_christmas(year: int = VALID_YEAR) -> int:
@@ -86,19 +79,12 @@ async def send_impish_msg(ctx):
     await ctx.channel.send(embed=embedVar, file=impish_file)
 
 
-async def send_success_msg(
-    ctx, username, addr, first_nft_id, preview, img_cid, nft_cid
-):
+async def send_success_msg(ctx, username, preview):
     """Send the success message."""
     # Configure the message
     embedVar = discord.Embed(
         title=f"Your Gift is available, {username}!",
-        description=f"\
-        You can check out your updated collection on [OpenSea](https://testnets.opensea.io/{addr}?tab=collected&search[sortBy]=CREATED_DATE&search[sortAscending]=false),\n\
-        or download the [raw images](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{img_cid}) and [NFTs](https://violet-legal-antelope-340.mypinata.cloud/ipfs/{nft_cid})\n\
-        **Your NFT ID's are: {first_nft_id}, {first_nft_id+1}, {first_nft_id+2}, and {first_nft_id+3}.**\n\
-        (It might take ~1 minute to register on OpenSea)\n\
-        Here is a small preview:",
+        description="Here is a small preview:",
         color=0x00FF00,
     )
     prev_file = discord.File(preview, filename=preview)
