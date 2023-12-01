@@ -79,12 +79,12 @@ async def send_impish_msg(ctx):
     await ctx.channel.send(embed=embedVar, file=impish_file)
 
 
-async def send_success_msg(ctx, username, preview):
+async def send_success_msg(ctx, username, preview, revised_prompt):
     """Send the success message."""
     # Configure the message
     embedVar = discord.Embed(
         title=f"Your Gift is available, {username}!",
-        description="Here is a small preview:",
+        # description=f"Chatgpt Revised your prompt to: {revised_prompt}",
         color=0x00FF00,
     )
     prev_file = discord.File(preview, filename=preview)

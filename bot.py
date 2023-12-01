@@ -6,15 +6,15 @@ import shutil
 from typing import Tuple, List, Dict, Optional
 import discord
 from copy import deepcopy
-from concurrent.futures import ThreadPoolExecutor
+
+from openai import OpenAI
 
 import discord
 from discord.ext import commands
 from discord.abc import Messageable
 from dotenv import load_dotenv
-from dalle2 import Dalle2
 from src.constants import VALID_YEAR, OUT_DIR, START_WEEK
-from src.artists import add_frame, create_nft_preview
+from src.artists import add_frame
 from src.msgs import (
     days_until_christmas,
     send_created_msg,
@@ -52,12 +52,10 @@ from PIL.Image import Image as ImgType
 # ============================================ #
 load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
-OPENAI_TOKEN = os.getenv("OPENAI_TOKEN")
-CONTRACT_ADDRESS = os.getenv("CONTRACT_ADDRESS")
 SIM_FLAG = bool(int(os.getenv("SIM_FLAG")))
 
 # Initialize the dalle API
-dalle = Dalle2(OPENAI_TOKEN)
+openai_client = OpenAI()
 
 # Initialize the discord bot
 intents = discord.Intents.default()
@@ -78,9 +76,6 @@ bot = commands.Bot(
 # Initialize the mutex locks
 history_mutex = Lock()
 rarities_mutex = Lock()
-
-# Initialize a threadpool executor
-executor = ThreadPoolExecutor(max_workers=4)
 
 
 # %% Utility Functions
@@ -125,26 +120,6 @@ async def verification(ctx, username: str):
 
     # Release the mutex and return
     history_mutex.release()
-
-
-def make_uniq_dirs(ctx, username: str) -> Tuple[str, str, str]:
-    """Create the unique image, nft, and metadata directories."""
-    # Check that the user has not claimed a gift today
-    username = username.lower()
-    datestr = datetime.today().strftime("%Y-%m-%d")
-
-    # Generate unique paths
-    unq_img_dir = os.path.join(OUT_DIR, username, datestr, f"xlb-imgs")
-    unq_nft_dir = os.path.join(OUT_DIR, username, datestr, f"xlb-nfts")
-    unq_dat_dir = os.path.join(OUT_DIR, username, datestr, f"xlb-dats")
-    unq_prv_dir = os.path.join(OUT_DIR, username, datestr, f"xlb-prvs")
-
-    os.makedirs(unq_img_dir, exist_ok=True)
-    os.makedirs(unq_nft_dir, exist_ok=True)
-    os.makedirs(unq_dat_dir, exist_ok=True)
-    os.makedirs(unq_prv_dir, exist_ok=True)
-
-    return unq_img_dir, unq_nft_dir, unq_dat_dir, unq_prv_dir
 
 
 def get_week_num():
@@ -259,8 +234,6 @@ async def _gift_util(
     description: str,
     metadata: Dict[str, str],
 ):
-    first_nft_id = 0
-
     start = datetime.now()
 
     # Send the admirable message
@@ -269,12 +242,15 @@ async def _gift_util(
     # ============================================ #
     # Setup the unique directory structure
     # ============================================ #
-    (
-        unq_img_dir,
-        unq_nft_dir,
-        unq_dat_dir,
-        unq_prv_dir,
-    ) = make_uniq_dirs(ctx, username)
+    datestr = datetime.today().strftime("%Y-%m-%d")
+
+    # Generate unique paths
+    uniq_dir = os.path.join(OUT_DIR, username)
+    os.makedirs(uniq_dir, exist_ok=True)
+
+    img_file = os.path.join(uniq_dir, f"{datestr}.png")
+    nft_file = os.path.join(uniq_dir, f"{datestr}.gif")
+    data_file = os.path.join(uniq_dir, f"{datestr}.json")
 
     # ============================================ #
     # Image Generation
@@ -283,12 +259,13 @@ async def _gift_util(
     print("Generating the artwork...")
     if SIM_FLAG:
         # Generate some example art so we don't have to query Dalle
-        images, img_files = generate_example_art(unq_img_dir, first_nft_id)
+        image = generate_example_art(img_file)
+        revised_prompt = description
     else:
         # Generate the art using Dalle
-        images, img_files = generate_dalle_art(dalle, description, unq_img_dir)
+        image, revised_prompt = generate_dalle_art(openai_client, description, img_file)
 
-        if images is None or img_files is None:
+        if image is None:
             _recover(ctx, username, rarity_label)
             await send_error(ctx, username)
             raise RuntimeError("Dalle Error")
@@ -299,48 +276,21 @@ async def _gift_util(
     # ============================================ #
     # NFT Generation
     # ============================================ #
-    num_imgs = len(images)  # This should always be 4 according to dalle...
-    nft_files = [
-        os.path.join(unq_nft_dir, f"{first_nft_id + idx}.gif")
-        for idx in range(num_imgs)
-    ]
-    metadata_files = [
-        os.path.join(unq_dat_dir, f"{first_nft_id + idx}.gif")
-        for idx in range(num_imgs)
-    ]
-
     # Add the frame to each image and then save them
     # Spawn these in multiple threads since this can be done asynchronously and is slow
-    print(f"Adding frames to the NFTs ({first_nft_id})...")
-    nft_imgs = [res for res in executor.map(add_frame, images, num_imgs * [frame_name])]
+    print("Adding frames to the NFTs...")
+    nft_img = add_frame(image, frame_name)
 
-    print(f"Saving the NFTs ({first_nft_id})...")
-    _ = [res for res in executor.map(save_nft, nft_imgs, nft_files)]
+    print("Saving the NFTs...")
+    save_nft(nft_img, nft_file)
 
     # Save the metadata jsons
-    print(f"Saving the NFTs ({first_nft_id})...")
-    _ = [res for res in executor.map(save_metadata, metadata, metadata_files)]
-
-    # Create the preview image
-    print("Creating Preview...")
-    preview = create_nft_preview(nft_imgs, frame_name)
-    preview_filename = os.path.join(unq_prv_dir, "preview.gif")
-    preview[0].save(
-        preview_filename,
-        save_all=True,
-        append_images=preview[1:],
-        optimize=True,
-        duration=10,
-        loop=0,
-    )
+    print("Saving the NFTs...")
+    save_metadata(metadata, data_file)
 
     # Send a message to the new owner with images of their new NFTs!
     print("Complete!")
-    await send_success_msg(
-        ctx,
-        username,
-        preview_filename,
-    )
+    await send_success_msg(ctx, username, nft_file, revised_prompt)
 
     stop = datetime.now()
     print("Elapsed Time: ", str(stop - start))

@@ -2,31 +2,34 @@ from typing import List, Dict, Tuple
 import os
 from PIL import Image
 from PIL.Image import Image as ImgType
-from dalle2 import Dalle2
-
+from base64 import b64decode
 from .constants import ASSET_DIR
+from io import BytesIO
 
 
 def generate_dalle_art(
-    dalle: Dalle2, description: str, img_dir: str
+    openai_client, description: str, img_file: str
 ) -> Tuple[List[ImgType], List[str]]:
-    """Execute the Dalle-2 art generation API using the provided credentials and text prompt.
+    """Execute the Dalle-3 art generation API using the provided credentials and text prompt."""
+    # Query the image
+    response = openai_client.images.generate(
+        model="dall-e-3",
+        prompt=description,
+        size="1024x1024",
+        quality="standard",
+        response_format="b64_json",
+        n=1,
+    )
 
-    DO NOT CALL WITH `sim=True` UNTIL YOU ARE READY!! IT WILL COST MONEY!!!
-    """
-    # Generate and download new Dalle2 images
-    img_files = dalle.generate_and_download(description, image_dir=img_dir)
-
-    if img_files is None:
-        # Something went wrong...
-        return None, None
-
-    images = []
-    for img_file in img_files:
-        images.append(Image.open(img_file))
+    imgbytes = b64decode(response.data[0].b64_json)
+    with open(img_file, mode="wb") as png:
+        png.write(imgbytes)
 
     # Return the list of images
-    return images, img_files
+    img = Image.open(BytesIO(imgbytes))
+    revised_prompt = response.data[0].revised_prompt
+
+    return img, revised_prompt
 
 
 def generate_example_art(
