@@ -487,13 +487,13 @@ async def join(ctx: Messageable):
     rarity_labels = get_rarity_labels()
     rarities[username] = {r: 0 for r in rarity_labels}
 
-    shutil.copyfile("rarities.json", "/tmp/rarities.json")
+    shutil.copyfile("rarities.json", "tmp/rarities.json")
     try:
         with open("rarities.json", "w") as f:
             json.dump(rarities, f)
     except Exception as exc:
         print(exc)
-        shutil.copyfile("/tmp/rarities.json", "rarities.json")
+        shutil.copyfile("tmp/rarities.json", "rarities.json")
 
     rarities_mutex.release()
 
