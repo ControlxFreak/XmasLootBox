@@ -53,7 +53,7 @@ async def send_no_wallet_msg(ctx, username):
         title=f"Sorry, {username} is on the Naughty List!",
         description="\
         ...Well more accurately, I don't see you on the Nice List.\n\
-        If you would like to play and receive gifts this year, contact @aoth to be added!\n\
+        If you would like to play and receive gifts this year, contact @bayesbrew to be added!\n\
         Ho Ho Ho Ho!\
         ",
         color=0xFF0000,
@@ -93,11 +93,11 @@ async def send_success_msg(ctx, username, preview):
     await ctx.channel.send(embed=embedVar, file=prev_file)
 
 
-async def send_not_aoth_msg(ctx):
-    """Send the not aoth message for creating new users."""
+async def send_not_bayesbrew_msg(ctx):
+    """Send the not bayesbrew message for creating new users."""
     # Configure the message
     embedVar = discord.Embed(
-        title=f"You are not aoth, {ctx.message.author.name}!",
+        title=f"You are not bayesbrew, {ctx.message.author.name}!",
         description="Ah Ah Ah, you didn't say the magic word!",
         color=0xFF0000,
     )
@@ -107,10 +107,10 @@ async def send_not_aoth_msg(ctx):
     await ctx.channel.send(embed=embedVar, file=stop_file)
 
 
-async def send_created_msg(ctx, username, addr):
+async def send_created_msg(ctx, username):
     # Configure the message
     embedVar = discord.Embed(
-        title=f"Created an account for {username}!\nYour Ethereum address is:\n{addr}",
+        title=f"Created an account for {username}!",
         description=f"\
         You should be able to collect a loot box right away, @{username}!\n\
         Use the `>help` command to get started.",
@@ -129,7 +129,7 @@ async def send_addr_msg(ctx, addr):
         title=f"{ctx.message.author.name}, your Ethereum address is:\n{addr}",
         description=f"\
         **You can find your collection on [OpenSea](https://testnets.opensea.io/{addr})**\n\
-        If you are interested in understanding more about Ethereum addresses, ask @aoth!",
+        If you are interested in understanding more about Ethereum addresses, ask @bayesbrew!",
         color=0x00873E,
     )
     eth_file = discord.File("assets/msgs/eth.jpg", filename="eth.jpg")
@@ -144,7 +144,7 @@ async def send_user_has_account(ctx, username, addr):
     embedVar = discord.Embed(
         title=f"{username} already has an account!\nYour Ethereum address is:\n{addr}",
         description="\
-        If you are interested in understanding more about Ethereum addresses, ask @aoth!",
+        If you are interested in understanding more about Ethereum addresses, ask @bayesbrew!",
         color=0x00FF00,
     )
     eth_file = discord.File("assets/msgs/eth.jpg", filename="eth.jpg")
@@ -344,7 +344,7 @@ async def send_bot_faq_msg(ctx):
         Now, that price is *per computer operation*... transferring an NFT requires around 65,000 operations, meaning the cost is around (65000 * 50e-9) = 0.00325 ETH. \
         (There is also a tip that you need to pay the node operators to incentivize them to continue donating their computers to the Ethereum network... but that is cheap on a testnet so I rounded to 0.004 ETH.)\n\
         [Here is more information if you are interested](https://ethereum.org/en/developers/docs/gas/), or use the '!faq web3` for more answers to FAQs about web3.\n\n\
-        **@aoth, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
+        **@bayesbrew, why are you writing this instead of studying for your exam, spending time with your child or working on your thesis?**\n\
         Great question. 🤷‍♂️ I needed something to do when Katelyn was asleep and I missed coding.",
         color=0x4056AA,
     )
@@ -438,7 +438,7 @@ async def send_mint_error(ctx):
     embedVar = discord.Embed(
         title="Oh No! My Reindeer are Broken...",
         description="It looks like my reindeer are sick, meaning they cannot deliver your gift!\n\n\
-        Contact @aoth and tell him to fix this immediately.",
+        Contact @bayesbrew and tell him to fix this immediately.",
         color=0xFF0000,
     )
     elf_file = discord.File(
@@ -454,7 +454,7 @@ async def send_daily_eth_error(ctx):
         title="Santa's been hacked!",
         description="I never should have trusted that shady elf on ChristmasFans...\n\n\
         Now I have no more ETH to give to the admirable...\n\n\
-        Contact @aoth and tell him to fix this immediately.",
+        Contact @bayesbrew and tell him to fix this immediately.",
         color=0xFF0000,
     )
     elf_file = discord.File("assets/msgs/santa_hacker.png", filename="santa_hacker.png")

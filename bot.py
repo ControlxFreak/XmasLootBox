@@ -1,5 +1,5 @@
 # %%
-import datetime
+from datetime import datetime, date
 import json
 import os
 import shutil
@@ -17,11 +17,13 @@ from src.constants import VALID_YEAR, OUT_DIR, START_WEEK
 from src.artists import add_frame, create_nft_preview
 from src.msgs import (
     days_until_christmas,
+    send_created_msg,
     send_eoe_msg,
     send_impish_msg,
+    send_invalid_username,
     send_recovered_msg,
     send_admirable_msg,
-    send_not_aoth_msg,
+    send_not_bayesbrew_msg,
     send_error,
     send_success_msg,
     send_rares_msg,
@@ -62,7 +64,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 help_command = commands.DefaultHelpCommand(no_category="Commands")
-bot_description = "To be added to the game, contact @aoth.\n\n\
+bot_description = "To be added to the game, contact @bayesbrew.\n\n\
                    To claim a gift, use the command: !claim"
 bot = commands.Bot(
     command_prefix="!",
@@ -98,7 +100,7 @@ async def verification(ctx, username: str):
         history = json.load(f)
 
     # Check to see if this user has claimed a loot box today
-    year, week_num, day_num = datetime.date.today().isocalendar()
+    year, week_num, day_num = date.today().isocalendar()
     day_hash = hash((year, week_num, day_num))
 
     if day_hash in history[username]:
@@ -112,12 +114,12 @@ async def verification(ctx, username: str):
         history[username].append(day_hash)
 
     # Make a copy just in case
-    shutil.copyfile("history.json", "/tmp/history.json")
+    shutil.copyfile("history.json", "tmp/history.json")
     try:
         with open("history.json", "w") as f:
             json.dump(history, f)
     except Exception as exc:
-        shutil.copyfile("history.json", "/tmp/history.json")
+        shutil.copyfile("history.json", "tmp/history.json")
         history_mutex.release()
         raise exc
 
@@ -125,7 +127,7 @@ async def verification(ctx, username: str):
     history_mutex.release()
 
 
-async def make_uniq_dirs(ctx, username: str) -> Tuple[str, str, str]:
+def make_uniq_dirs(ctx, username: str) -> Tuple[str, str, str]:
     """Create the unique image, nft, and metadata directories."""
     # Check that the user has not claimed a gift today
     username = username.lower()
@@ -147,7 +149,7 @@ async def make_uniq_dirs(ctx, username: str) -> Tuple[str, str, str]:
 
 def get_week_num():
     """Get the week number relative to the start of the game."""
-    _, week_num, _ = datetime.date.today().isocalendar()
+    _, week_num, _ = date.today().isocalendar()
     return week_num - START_WEEK
 
 
@@ -221,7 +223,7 @@ async def _recover(ctx: Messageable, username: str, rarity_label: Optional[str])
         history = json.load(f)
 
     # Check to see if this user has claimed a loot box today
-    year, week_num, day_num = datetime.date.today().isocalendar()
+    year, week_num, day_num = date.today().isocalendar()
     day_hash = hash((year, week_num, day_num))
 
     # Check to see if this user has claimed a loot box today
@@ -229,12 +231,12 @@ async def _recover(ctx: Messageable, username: str, rarity_label: Optional[str])
         history[username].remove(day_hash)
 
         # Make a copy just in case
-        shutil.copyfile("history.json", "/tmp/history.json")
+        shutil.copyfile("history.json", "tmp/history.json")
         try:
             with open("history.json", "w") as f:
                 json.dump(history, f)
         except Exception as exc:
-            shutil.copyfile("history.json", "/tmp/history.json")
+            shutil.copyfile("history.json", "tmp/history.json")
             history_mutex.release()
             raise exc
 
@@ -272,7 +274,7 @@ async def _gift_util(
         unq_nft_dir,
         unq_dat_dir,
         unq_prv_dir,
-    ) = make_uniq_dirs()
+    ) = make_uniq_dirs(ctx, username)
 
     # ============================================ #
     # Image Generation
@@ -337,7 +339,6 @@ async def _gift_util(
     await send_success_msg(
         ctx,
         username,
-        first_nft_id,
         preview_filename,
     )
 
@@ -394,13 +395,13 @@ async def claim(ctx: Messageable):
 async def topElfRecover(
     ctx: Messageable, username: str, rarity_label: Optional[str] = None
 ):
-    """Only @aoth can use this function.
+    """Only @bayesbrew can use this function.
 
     Recover the credits if something broke when a user tried to claim their gift.
     """
     # Check if I called it...
-    if (ctx.message.author.name).lower() != "aoth":
-        await send_not_aoth_msg(ctx)
+    if (ctx.message.author.name).lower() != "bayesbrew":
+        await send_not_bayesbrew_msg(ctx)
         return
 
     await _recover(ctx, username, rarity_label)
@@ -410,13 +411,13 @@ async def topElfRecover(
 async def topElfPower(
     ctx: Messageable, username: str, rarity_label: str, description: str
 ):
-    """Only @aoth can use this function.
+    """Only @bayesbrew can use this function.
 
     Create an exact gift for someone.
     """
     # Check if I called it...
-    if (ctx.message.author.name).lower() != "aoth":
-        await send_not_aoth_msg(ctx)
+    if (ctx.message.author.name).lower() != "bayesbrew":
+        await send_not_bayesbrew_msg(ctx)
         return
 
     # ============================================ #
@@ -486,6 +487,73 @@ async def create(ctx: Messageable, *, description: str):
 
 
 @bot.command()
+async def join(ctx: Messageable):
+    """Create an account and join the game!"""
+    username = (ctx.message.author.name).lower()
+
+    # =============================== #
+    # Verification
+    # =============================== #
+    all_members = [mem.name.lower() for mem in bot.get_all_members()]
+
+    if username not in all_members:
+        await send_invalid_username(ctx, username)
+        return
+
+    # =============================== #
+    # History
+    # =============================== #
+    history_mutex.acquire()
+
+    with open("history.json", "r") as f:
+        history = json.load(f)
+
+    if username in history.keys():
+        history_mutex.release()
+        await send_created_msg(ctx, username)
+        return
+
+    history[username] = []
+
+    # Save the accounts file (first make a copy just in case...)
+    shutil.copyfile("history.json", "tmp/history.json")
+    try:
+        with open("history.json", "w") as f:
+            json.dump(history, f)
+    except Exception as exc:
+        shutil.copyfile("tmp/history.json", "history.json")
+        raise exc
+
+    history_mutex.release()
+
+    # =============================== #
+    # Rarities
+    # =============================== #
+    rarities_mutex.acquire()
+
+    with open("rarities.json", "r") as f:
+        rarities = json.load(f)
+
+    rarity_labels = get_rarity_labels()
+    rarities[username] = {r: 0 for r in rarity_labels}
+
+    shutil.copyfile("rarities.json", "/tmp/rarities.json")
+    try:
+        with open("rarities.json", "w") as f:
+            json.dump(rarities, f)
+    except Exception as exc:
+        print(exc)
+        shutil.copyfile("/tmp/rarities.json", "rarities.json")
+
+    rarities_mutex.release()
+
+    # =============================== #
+    # Send the msg
+    # =============================== #
+    await send_created_msg(ctx, username)
+
+
+@bot.command()
 async def rares(ctx: Messageable):
     """Display the number of rare NFTs everyone has!"""
     rarities_mutex.acquire()
@@ -503,7 +571,7 @@ async def odds(ctx: Messageable):
         rarities = json.load(f)
     rarities_mutex.release()
 
-    week_num = get_week_num() - START_WEEK
+    week_num = get_week_num()
     pmf = get_rarity_pmf(week_num)
     await send_odds_msg(ctx, week_num, pmf, rarities)
 

@@ -9,3 +9,6 @@ BASE_DIR = os.path.dirname(os.path.realpath(__file__))
 ASSET_DIR = os.path.join(BASE_DIR, "../assets/")
 FRAME_DIR = os.path.join(BASE_DIR, ASSET_DIR, "frames/")
 OUT_DIR = os.path.join(BASE_DIR, "../nfts/")
+
+# Define the collection URL
+OPENSEA_URL = "https://testnets.opensea.io/collection/xmaslootbox?search[sortAscending]=false&search[sortBy]=CREATED_DATE"
