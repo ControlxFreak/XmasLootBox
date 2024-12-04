@@ -1,8 +1,8 @@
 import os
 
 # Define the valid time
-VALID_YEAR = 2023
-START_WEEK = 48
+VALID_YEAR = 2024
+START_WEEK = 49
 
 # Define the input/output directories
 BASE_DIR = os.path.dirname(os.path.realpath(__file__))

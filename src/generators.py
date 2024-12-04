@@ -9,7 +9,7 @@ from io import BytesIO
 
 def generate_dalle_art(
     openai_client, description: str, img_file: str
-) -> Tuple[List[ImgType], List[str]]:
+) -> Tuple[ImgType, str]:
     """Execute the Dalle-3 art generation API using the provided credentials and text prompt."""
     # Query the image
     response = openai_client.images.generate(
@@ -33,20 +33,13 @@ def generate_dalle_art(
 
 
 def generate_example_art(
-    unq_img_dir: str, first_nft_id: int
-) -> Tuple[List[ImgType], List[str]]:
+    unq_img_dir: str
+) -> ImgType:
     """Just generate some example artwork for testing."""
     # Load the example images
-    images = [
-        Image.open(os.path.join(ASSET_DIR, f"example/{i}.png")) for i in range(1, 5)
-    ]
-    # Copy them into the correct location so they can be uploaded
-    img_files = [
-        os.path.join(unq_img_dir, f"{first_nft_id + idx}.png") for idx in range(4)
-    ]
-    _ = [img.save(img_file) for img, img_file in zip(images, img_files)]
-
-    return images, img_files
+    image = Image.open(os.path.join(ASSET_DIR, f"example/1.png"))
+    image.save(unq_img_dir)
+    return image
 
 
 def generate_dalle_description(attributes: Dict[str, str]) -> str:
