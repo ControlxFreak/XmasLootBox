@@ -1,5 +1,6 @@
 # %%
 from typing import List, Optional, Dict
+from math import factorial
 import numpy as np
 import random
 
@@ -283,7 +284,7 @@ def get_rarity_pmf(week_num: int) -> str:
     exp_mu = np.exp(-mu)
 
     # Compute the PMF over this support and normalize to ensure its still a distribution
-    pmf = [(exp_mu * (mu**i)) / np.math.factorial(i) for i in ids]
+    pmf = [(exp_mu * (mu**i)) / factorial(i) for i in ids]
     pmf /= np.sum(pmf)
     return pmf
 

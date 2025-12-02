@@ -30,6 +30,7 @@ from src.msgs import (
     send_odds_msg,
     send_welcome_msg,
     send_joke_msg,
+    send_join_msg,
 )
 from src.generators import (
     generate_dalle_description,
@@ -93,6 +94,12 @@ async def verification(ctx, username: str):
     history_mutex.acquire()
     with open("history.json", "r") as f:
         history = json.load(f)
+
+    # Check that the user exists
+    if username not in history.keys():
+        await send_join_msg(ctx, username)
+        history_mutex.release()
+        raise RuntimeError("Multi-claim.")
 
     # Check to see if this user has claimed a loot box today
     year, week_num, day_num = date.today().isocalendar()
