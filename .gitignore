@@ -12,6 +12,7 @@ owners.json
 rarities.json
 votes.json
 servers.json
+story.json
 
 .DS_Store
 

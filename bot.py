@@ -1,11 +1,13 @@
 # %%
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 import json
 import os
 import shutil
 from typing import Tuple, List, Dict, Optional
 import discord
 from copy import deepcopy
+
+from random import choice
 
 from openai import OpenAI
 
@@ -77,7 +79,10 @@ bot = commands.Bot(
 # Initialize the mutex locks
 history_mutex = Lock()
 rarities_mutex = Lock()
+story_mutex = Lock()
 
+# Initialize the global variables
+CHRISTMAS_EMOJI = "🎄"
 
 # %% Utility Functions
 # ============================================ #
@@ -545,6 +550,243 @@ async def joke(ctx: Messageable):
     """Tell a random Christmas joke!"""
     await send_joke_msg(ctx)
 
+@bot.command()
+async def tell(ctx: Messageable, *, text: str):
+    """Add to the christmas story!"""
+    datestr = date.today().strftime("%Y-%m-%d")
+
+    username = (ctx.message.author.name).lower()
+    guild_name = ctx.guild.name.lower()
+
+    # Send the suggestion to the channel
+    embed = discord.Embed(
+        title=f"{CHRISTMAS_EMOJI} Story Suggestion by: @{username} {CHRISTMAS_EMOJI}",
+        description=f"\
+        ```\n{text}\n```",
+        color=0x2ECC71
+    )
+    embed.set_footer(text=f"Author: {username}")
+    msg = await ctx.channel.send(embed=embed)
+
+    # Add the reaction used for voting
+    await msg.add_reaction(CHRISTMAS_EMOJI)
+
+    # Save the suggestion internally
+    story_mutex.acquire()
+    with open("story.json", "r") as f:
+        story = json.load(f)
+
+    if guild_name not in story:
+        story[guild_name] = {}
+    if datestr not in story[guild_name]:
+        story[guild_name][datestr] = {}
+
+    story[guild_name][datestr][str(msg.id)] = {
+        "author": username,
+        "text": text,
+        "votes": 0
+    }
+
+    with open("story.json", "w") as f:
+        json.dump(story, f)
+
+    story_mutex.release()
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    if payload.emoji.name != CHRISTMAS_EMOJI:
+        return
+
+    msg_id = str(payload.message_id)
+
+    # Ignore the bot's own reaction
+    if payload.user_id == bot.user.id:
+        return
+
+    datestr = date.today().strftime("%Y-%m-%d")
+
+    guild = bot.get_guild(payload.guild_id)
+    guild_name = guild.name.lower()
+
+    story_mutex.acquire()
+    with open("story.json", "r") as f:
+        story = json.load(f)
+
+    if guild_name not in story:
+        story_mutex.release()
+        raise ValueError("ERROR: No guild name: " + guild_name)
+
+    if datestr not in story[guild_name]:
+        story_mutex.release()
+        raise ValueError("ERROR: No day hash: " + guild_name + ", " + str(datestr))
+
+    if msg_id not in story[guild_name][datestr]:
+        story_mutex.release()
+        raise ValueError("ERROR: No msg id: " + guild_name + ", " + str(datestr) + ", " + str(msg_id))
+
+    story[guild_name][datestr][msg_id]["votes"] += 1
+
+    with open("story.json", "w") as f:
+        json.dump(story, f)
+
+    story_mutex.release()
+
+
+@bot.event
+async def on_raw_reaction_remove(payload):
+    if payload.emoji.name != CHRISTMAS_EMOJI:
+        return
+
+    msg_id = str(payload.message_id)
+
+    datestr = date.today().strftime("%Y-%m-%d")
+
+    guild = bot.get_guild(payload.guild_id)
+    guild_name = guild.name.lower()
+
+    story_mutex.acquire()
+    with open("story.json", "r") as f:
+        story = json.load(f)
+
+    if guild_name not in story:
+        story_mutex.release()
+        raise ValueError("ERROR: No guild name: " + guild_name)
+
+    if datestr not in story[guild_name]:
+        story_mutex.release()
+        raise ValueError("ERROR: No day hash: " + guild_name + ", " + str(datestr))
+
+    if msg_id not in story[guild_name][datestr]:
+        story_mutex.release()
+        raise ValueError("ERROR: No msg id: " + guild_name + ", " + str(datestr) + ", " + str(msg_id))
+
+    story[guild_name][datestr][msg_id]["votes"] -= 1
+
+    with open("story.json", "w") as f:
+        json.dump(story, f)
+
+    story_mutex.release()
+
+async def send_story_util(ctx, title, description):
+    embed = discord.Embed(
+        title=title,
+        description=description,
+        color=0xE57373
+    )
+    await ctx.channel.send(embed=embed)
+
+@bot.command()
+async def story(ctx):
+    story_mutex.acquire()
+    with open("story.json", "r") as f:
+        story = json.load(f)
+    story_mutex.release()
+
+    guild_name = ctx.guild.name.lower()
+    if guild_name not in story:
+        embed = discord.Embed(
+            title=f"A story has yet to be written!",
+            description="Try tomorrow!",
+            color=0xFF0000
+        )
+        await ctx.channel.send(embed=embed)
+        return
+
+    readable_datestr = date.today().strftime("%m/%d/%Y")
+    title_string = f"{CHRISTMAS_EMOJI} Current Christmas Story as of {readable_datestr} {CHRISTMAS_EMOJI}"
+    story_string = ""
+
+    # Loop through each of the day hashes for this guild
+    msg_idx = 0
+    for day_idx, (key,value) in enumerate(story[guild_name].items()):
+        if "winner" not in value.keys():
+            continue
+        winner = value["winner"]
+
+        story_string += f"\n**Chapter {day_idx+1}: {key}**\
+                          ```\n{winner['text']}\n```\n"
+        story_string += "\n🎅🎄🔔🎁❄️☃️✨\n"
+
+        if len(story_string) > 3000:
+            story_string += "\n<---- MESSAGE BREAK ---->\n"
+            await send_story_util(ctx, title_string + f"\nMessage: {msg_idx+1}", story_string)
+            msg_idx += 1
+            story_string = ""
+    
+    if msg_idx == 0:
+        await send_story_util(ctx, title_string, story_string)
+    else:
+        await send_story_util(ctx, title_string + f"\nMessage: {msg_idx+1}", story_string)
+
+
+@bot.command()
+async def chapter(ctx):
+    # Get yesterday's chapter
+    today = date.today()
+    yesterday = today - timedelta(days=0) ## TODO: temp
+    datestr = yesterday.strftime("%Y-%m-%d")
+    readable_datestr = yesterday.strftime("%m/%d/%Y")
+    guild_name = ctx.guild.name.lower()
+
+    story_mutex.acquire()
+    with open("story.json", "r") as f:
+        story = json.load(f)
+    story_mutex.release()
+
+    if guild_name not in story or datestr not in story[guild_name]:
+        embed = discord.Embed(
+            title=f"Yesterday's story has yet to be written!",
+            description="Try tomorrow!",
+            color=0xFF0000
+        )
+        await ctx.channel.send(embed=embed)
+        return
+
+    chapter = story[guild_name][datestr]
+
+    # If today's chapter has been written, send it.
+    if "winner" in chapter:
+        embed = discord.Embed(
+            title=f"{CHRISTMAS_EMOJI} Chapter {datestr} {CHRISTMAS_EMOJI}",
+            description=f"\
+            ```\n{value['text']}\n```",
+            color=0xE57373
+        )
+        embed.set_footer(text=f"Suggested by {value['author']}")
+        await ctx.channel.send(embed=embed)
+    else:
+        # Get the top suggestions
+        max_val = -1
+        winners = []
+        for value in chapter.values():
+            if value["votes"] > max_val:
+                max_val = value["votes"]
+                winners = [value]
+            elif value["votes"] == max_val:
+                winners.append(value)
+
+        # Randomly select a winner
+        value = choice(winners)
+
+        # Save the winner
+        story_mutex.acquire()
+        with open("story.json", "r") as f:
+            story = json.load(f)
+
+        story[guild_name][datestr]["winner"] = value
+
+        with open("story.json", "w") as f:
+            json.dump(story, f)
+
+        story_mutex.release()
+        embed = discord.Embed(
+            title=f"{CHRISTMAS_EMOJI} Chapter {readable_datestr} {CHRISTMAS_EMOJI}",
+            description=f"\
+            ```\n{value['text']}\n```",
+            color=0xE57373
+        )
+        embed.set_footer(text=f"Suggested by {value['author']}")
+        await ctx.channel.send(embed=embed)
 
 # Run the bot
 bot.run(DISCORD_TOKEN)
