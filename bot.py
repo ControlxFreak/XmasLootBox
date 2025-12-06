@@ -723,7 +723,7 @@ async def story(ctx):
 async def chapter(ctx):
     # Get yesterday's chapter
     today = date.today()
-    yesterday = today - timedelta(days=0) ## TODO: temp
+    yesterday = today - timedelta(days=1)
     datestr = yesterday.strftime("%Y-%m-%d")
     readable_datestr = yesterday.strftime("%m/%d/%Y")
     guild_name = ctx.guild.name.lower()
