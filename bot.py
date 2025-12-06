@@ -105,10 +105,11 @@ async def verification(ctx, username: str):
     year, week_num, day_num = date.today().isocalendar()
     day_hash = hash((year, week_num, day_num))
 
-    if day_hash in history[username]:
-        await send_impish_msg(ctx)
-        history_mutex.release()
-        raise RuntimeError("Multi-claim.")
+    if username not in ["bayesbrew", "divinecoffee"]:
+        if day_hash in history[username]:
+            await send_impish_msg(ctx)
+            history_mutex.release()
+            raise RuntimeError("Multi-claim.")
 
     # Otherwise, they are admirable!
     # Update the dictionary notifying that they have claimed it today

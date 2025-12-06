@@ -1,7 +1,7 @@
 import os
 
 # Define the valid time
-VALID_YEAR = 2024
+VALID_YEAR = 2025
 START_WEEK = 49
 
 # Define the input/output directories
